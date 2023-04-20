@@ -10,6 +10,11 @@ app.use(express.urlencoded({ extended: false }))
 
 app.use('/users', usersRouter)
 
+// Define a route handler
+app.get('/', (req, res) => {
+  res.send('Hello, World!')
+})
+
 // Handling all other routes with a 404 error
 app.all('*', (req, res, next) => {
   next(new ErrorClass(`Requested URL ${req.path} not found!`, 404))

@@ -28,6 +28,15 @@
         "endOfLine": "lf"
       }
     ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": true,
+        "optionalDependencies": true,
+        "peerDependencies": true
+      }
+    ],
+
     "indent": 0,
     "curly": 0,
     "radix": 0,
