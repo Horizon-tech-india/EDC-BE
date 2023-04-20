@@ -26,6 +26,8 @@ if (process.env.PRIVATE_KEY && process.env.CERTIFICATE) {
 async function startServer() {
   try {
     const db = await connectToDatabase()
+    console.log(db.listCollections  )
+
     console.log('Connected successfully to MongoDB server')
     server.listen(port, () => {
       console.log(`Server is listening on port ${port}`)
