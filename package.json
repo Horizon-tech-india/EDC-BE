@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server",
-    "dev": "nodemon server"
+    "dev": "nodemon server",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -20,10 +21,14 @@
   },
   "homepage": "https://github.com/Horizon-tech-india/EDC-BE#readme",
   "prettier": {
-    "tabWidth": 4,
+    "tabWidth": 2,
+    "semi": false,
     "singleQuote": true,
-    "trailingComma": "es5",
+    "trailingComma": "all",
+    "insert_final_newline": true,
+    "arrowParens": "always",
     "bracketSpacing": true,
+    "max_line_length": 120,
     "printWidth": 80,
     "endOfLine": "lf"
   },
@@ -36,7 +41,10 @@
   "devDependencies": {
     "eslint": "^8.38.0",
     "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
-    "nodemon": "^2.0.22"
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.22",
+    "prettier": "^2.8.7"
   }
 }
