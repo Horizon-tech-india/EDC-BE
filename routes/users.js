@@ -4,6 +4,6 @@ const express = require('express'),
 
 userRouter.post('/login', userController.login)
 
-userRouter.post('/signup', userController.logout)
+userRouter.post('/signup', userController.signup)
 // need to use auth token for every api expect login
 module.exports = userRouter

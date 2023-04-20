@@ -1,19 +1,21 @@
+// Importing required modules
 const express = require('express')
+const usersRouter = require('./routes/users')
+const ErrorClass = require('./services/error')
 
 const app = express()
-const users = require('./routes/users')
-
-const ErrorClass = require('./services/error')
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-app.use('/users', users)
+app.use('/users', usersRouter)
 
-app.all('*', (req) => {
-  throw new ErrorClass(`Requested URL ${req.path} not found!`, 404)
+// Handling all other routes with a 404 error
+app.all('*', (req, res, next) => {
+  next(new ErrorClass(`Requested URL ${req.path} not found!`, 404))
 })
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   const errorCode = err.code || 500
   res.status(errorCode).send({
