@@ -20,10 +20,14 @@
   },
   "homepage": "https://github.com/Horizon-tech-india/EDC-BE#readme",
   "prettier": {
-    "tabWidth": 4,
+    "tabWidth": 2,
+    "semi": false,
     "singleQuote": true,
-    "trailingComma": "es5",
+    "trailingComma": "all",
+    "insert_final_newline": true,
+    "arrowParens": "always",
     "bracketSpacing": true,
+    "max_line_length": 120,
     "printWidth": 80,
     "endOfLine": "lf"
   },
