@@ -1,18 +1,13 @@
-// Load environment variables from a .env file in the root directory
 require('dotenv').config()
 
-// Load the built-in `fs` and `https`/`http` modules
 const fs = require('fs')
 const https = require('https')
 const http = require('http')
 
-// Import the `app` module from a local file
 const app = require('./app')
 
-// Get the port number from the environment variables
 const port = process.env.PORT
 
-// Set the `port` variable in the `app` module
 app.set('port', port)
 
 let server

@@ -1,7 +1,6 @@
 // Export a function called "validateRequest" that takes two arguments: a "request" object and a "params" object
 module.exports.validateRequest = (request, params) => {
   try {
-    // Check if the "request" object has any keys that are not present in the "params" object
     let isInvalidRequest = Object.keys(request).some(
       (key) => !Object.keys(params).includes(key),
     )
@@ -20,18 +19,14 @@ module.exports.validateRequest = (request, params) => {
       }
     }
 
-    // If the request is invalid, throw an Error
     if (isInvalidRequest) throw new Error('Invalid request')
 
     // Return false to indicate a valid request
     return false
   } catch (error) {
-    // Log the error to the console
     console.error(error)
 
     // Return true to indicate an invalid request
     return true
   }
 }
-
-// Other utility functions such as generating tokens and decrypting passwords can be added to this same file for organization and easy access. 
