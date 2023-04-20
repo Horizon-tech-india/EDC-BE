@@ -11,7 +11,5 @@ Thumbs.db
 # dependencies
 /node_modules
 
-# SSL certificates
-certs/
 
 *.log
