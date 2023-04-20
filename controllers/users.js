@@ -1,3 +1,5 @@
+const Signup = require("../models/signup");
+
 // Login controller function
 module.exports.login = async (req, res, next) => {
   try {
@@ -17,6 +19,12 @@ module.exports.login = async (req, res, next) => {
 // Signup controller function
 module.exports.signup = async (req, res, next) => {
   try {
+    // const { first_name, lname, email, mobileno, password, userType, companyName } = req.body;
+    const data = req.body;
+    let user = new Signup(data);
+    await user.save();
+    console.log(user)
+    res.status(201).json({ message: "user send data successfully" });
     // TODO: Implement user signup logic here
 
     // Send a success response if signup is successful
