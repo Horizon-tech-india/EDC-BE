@@ -5,6 +5,7 @@ const https = require('https')
 const http = require('http')
 
 const app = require('./app')
+const connectToDatabase = require('./db')
 
 const port = process.env.PORT
 
@@ -22,7 +23,17 @@ if (process.env.PRIVATE_KEY && process.env.CERTIFICATE) {
   server = http.createServer(app)
 }
 
-// Start the server and listen for incoming requests
-server.listen(port, () => {
-  console.log(`Server is listening on port ${port}`)
-})
+async function startServer() {
+  try {
+    const db = await connectToDatabase()
+    console.log('Connected successfully to MongoDB server')
+    server.listen(port, () => {
+      console.log(`Server is listening on port ${port}`)
+    })
+  } catch (err) {
+    console.error('Error connecting to database', err)
+    process.exit(1)
+  }
+}
+
+startServer()
