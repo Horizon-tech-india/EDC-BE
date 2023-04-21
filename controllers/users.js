@@ -214,13 +214,13 @@ module.exports.setNewPassword = async (req, res, next) => {
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
       newPassword: true,
-      confirmNewPAssword: true,
+      confirmNewPassword: true,
     })
-    const { email, newPassword, confirmNewPAssword } = req.body
+    const { email, newPassword, confirmNewPassword } = req.body
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-    if (newPassword !== confirmNewPAssword) {
+    if (newPassword !== confirmNewPassword) {
       throw new ErrorClass(
         'New Password and Confirm New Password does not match !',
         400,
