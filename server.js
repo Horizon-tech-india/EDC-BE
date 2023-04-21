@@ -14,7 +14,7 @@ app.set('port', port)
 let server
 
 // If a private key is specified, create an HTTPS server with the specified key and certificate
-if (process.env.PRIVATE_KEY && process.env.CERTIFICATE) {
+if (!process.env.PRIVATE_KEY && process.env.CERTIFICATE) {
   const key = fs.readFileSync(process.env.PRIVATE_KEY),
     cert = fs.readFileSync(process.env.CERTIFICATE)
   server = https.createServer({ key, cert }, app)
