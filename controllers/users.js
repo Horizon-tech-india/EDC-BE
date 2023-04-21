@@ -148,7 +148,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
         })
       }
     } else {
-      res.send({ message: 'Incorrect OTP please enter again !', status: 400 })
+      throw new ErrorClass('Incorrect OTP please enter again !', 400)
     }
   } catch (e) {
     next(e)
