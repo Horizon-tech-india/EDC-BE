@@ -19,11 +19,11 @@ const SignupSchema = new mongoose.Schema({
     // maxlength: [20, 'Maximum 20 letters allowed'],
     // lowercase: true,
   },
-  profession: {
-    type: String,
-    // enum: ['student', 'coordinator'],
-    required: true,
-  },
+  // profession: {
+  //   type: String,
+  //   // enum: ['student', 'coordinator'],
+  //   required: true,
+  // },
   email: {
     type: String,
     required: true,

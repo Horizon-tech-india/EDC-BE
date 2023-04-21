@@ -48,7 +48,6 @@ module.exports.signup = async (req, res, next) => {
     const isInvalidRequest = validateRequest(req.body, {
       firstName: true,
       lastName: true,
-      profession: true,
       password: true,
       email: true,
       phoneNumber: true,
