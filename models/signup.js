@@ -35,7 +35,7 @@ const SignupSchema = new mongoose.Schema({
     // lowercase: true,
   },
   phoneNumber: {
-    type: Number,
+    type: String,
     required: true,
     // min: 1000000000,
     // max: 9999999999,
