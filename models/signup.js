@@ -86,41 +86,41 @@ const SignupSchema = new mongoose.Schema({
 })
 
 // Hash password before saving
-SignupSchema.pre('save', async function (next) {
-  const user = this
+// SignupSchema.pre('save', async function (next) {
+//   const user = this
 
-  if (!user.isModified('password')) {
-    return next()
-  }
+//   if (!user.isModified('password')) {
+//     return next()
+//   }
 
-  try {
-    const salt = await bcrypt.genSalt(10)
-    const hash = await bcrypt.hash(user.password, salt)
-    user.password = hash
-    next()
-  } catch (error) {
-    return next(error)
-  }
-})
+//   try {
+//     const salt = await bcrypt.genSalt(10)
+//     const hash = await bcrypt.hash(user.password, salt)
+//     user.password = hash
+//     next()
+//   } catch (error) {
+//     return next(error)
+//   }
+// })
 
 // Generate OTP before saving
-SignupSchema.pre('save', async function (next) {
-  const user = this
-  if (!user.isModified('mailOTP')) {
-    return next()
-  }
-  try {
-    const otp = speakeasy.totp({
-      secret: process.env.OTP_SECRET,
-      encoding: 'base32',
-    })
-    user.mailOTP = otp
-    next()
-  } catch (error) {
-    return next(error)
-  }
-})
+// SignupSchema.pre('save', async function (next) {
+//   const user = this
+//   if (!user.isModified('mailOTP')) {
+//     return next()
+//   }
+//   try {
+//     const otp = speakeasy.totp({
+//       secret: process.env.OTP_SECRET,
+//       encoding: 'base32',
+//     })
+//     user.mailOTP = otp
+//     next()
+//   } catch (error) {
+//     return next(error)
+//   }
+// })
 
-const Signup = mongoose.model('Signup', SignupSchema)
+const Signup = mongoose.model('users', SignupSchema)
 
 module.exports = Signup
