@@ -16,17 +16,17 @@ module.exports.login = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-    const { email, password, rememberMe } = req.body
+    const { email, password, rememberMe } = req.body   //created destucturing
 
     const isUserExits = await Signup.findOne({
-      email: req.body.email,
+      email: email, // changes from req.body
     })
     if (!isUserExits) {
       throw new ErrorClass('User does not exits with this email', 400)
     }
 
     const passwordMatch = await bcrypt.compare(
-      req.body.password,
+      password,  // changes from req.body
       isUserExits.password,
     )
     if (!passwordMatch) {
@@ -44,6 +44,7 @@ module.exports.login = async (req, res, next) => {
 
 // Signup controller function
 module.exports.signup = async (req, res, next) => {
+  const {email,password } = req.body  // creating destructuring
   try {
     const isInvalidRequest = validateRequest(req.body, {
       firstName: true,
@@ -57,14 +58,14 @@ module.exports.signup = async (req, res, next) => {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: req.body.email,
+      email: email,  // changes from req.body
     })
     if (isUserExits) {
       throw new ErrorClass('Already user exits with this email', 400)
     }
     if (
-      !validator.isLength(req.body.password, { min: 8 }) ||
-      !validator.isEmail(req.body.email)
+      !validator.isLength(password, { min: 8 }) ||  // changes from req.body
+      !validator.isEmail(email)  // changes from req.body
     ) {
       throw new ErrorClass(
         'Password lenght must be greater then 8 and email should be in proper format',
@@ -79,12 +80,12 @@ module.exports.signup = async (req, res, next) => {
       isForgotPassword: false,
     })
     const salt = await bcrypt.genSaltSync(10)
-    newData.password = bcrypt.hashSync(req.body.password, salt)
+    newData.password = bcrypt.hashSync(password, salt)// changes from req.body
 
     const mailOtp = generateRandomOTP()
     const htmlTemp = mailOTPTemp(mailOtp)
     const mailOptions = {
-      to: req.body.email,
+      to: email,
       subject: 'Horizon Tech signup verification code',
       html: htmlTemp,
     }
@@ -100,18 +101,19 @@ module.exports.signup = async (req, res, next) => {
 
 //use for verify mail otp and forgot password otp
 module.exports.verifyMailOtp = async (req, res, next) => {
+  const { email } = req.body;  // creating destructuring
   try {
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
       otp: true,
       isForgotPassword: true,
     })
-    const { isForgotPassword } = req.body
+    const { isForgotPassword } = req.body     
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: req.body.email,
+      email: email,  // changes from req.body
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -122,7 +124,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     if (isUserExits.mailOTP === req.body.otp) {
       if (isForgotPassword) {
         await Signup.updateOne(
-          { email: req.body.email },
+          { email: email },   // changes from req.body
           {
             $set: {
               isForgotPassword: true,
@@ -135,7 +137,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
         })
       } else {
         await Signup.updateOne(
-          { email: req.body.email },
+          { email: email },   // changes from req.body
           {
             $set: {
               otpVerified: true,
