@@ -77,6 +77,10 @@ const SignupSchema = new mongoose.Schema({
     // required: true,
     unique: true,
   },
+  isForgotPassword: {
+    type: Boolean,
+    require: true,
+  },
   // role: {
   //   type: String,
   //   required: true,

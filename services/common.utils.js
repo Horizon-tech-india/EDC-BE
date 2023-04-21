@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken')
+
 module.exports.validateRequest = (request, params) => {
   let isInvalidRequest = Object.keys(request).some(
     (key) => !Object.keys(params).includes(key),
@@ -16,5 +18,21 @@ module.exports.validateRequest = (request, params) => {
 
 module.exports.generateRandomOTP = () => {
   return Math.floor(100000 + Math.random() * 900000)
+}
+
+module.exports.generateToken = (user, rememberMe = false) => {
+  return jwt.sign(
+    {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profession: user.profession,
+      phoneNumber: user.phoneNumber,
+    },
+    process.env.TOKEN_KEY,
+    {
+      expiresIn: rememberMe ? '7d' : '60m',
+    },
+  )
 }
 // function lke gen token,decypt password will be come in this utils file
