@@ -13,4 +13,8 @@ module.exports.validateRequest = (request, params) => {
   }
   return isInvalidRequest
 }
+
+module.exports.generateRandomOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000)
+}
 // function lke gen token,decypt password will be come in this utils file
