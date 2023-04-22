@@ -5,7 +5,7 @@ const ErrorClass = require('../services/error')
 const bcrypt = require('bcryptjs')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
-// Login controller function
+
 module.exports.login = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.body, {
@@ -16,23 +16,23 @@ module.exports.login = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-    const { email, password, rememberMe } = req.body   //created destucturing
+    const { email, password, rememberMe } = req.body
 
     const isUserExits = await Signup.findOne({
-      email: email, // changes from req.body
+      email: email,
     })
     if (!isUserExits) {
       throw new ErrorClass('User does not exits with this email', 400)
     }
-
-    const passwordMatch = await bcrypt.compare(
-      password,  // changes from req.body
-      isUserExits.password,
-    )
+    if (!isUserExits.otpVerified) {
+        throw new ErrorClass('Please verify your email by entering otp', 400)
+      }
+    const passwordMatch = await bcrypt.compare(password, isUserExits.password)
     if (!passwordMatch) {
       throw new ErrorClass('Please enter the correct credentials', 400)
     }
     const token = generateToken(isUserExits, rememberMe)
+    await Signup.findOneAndUpdate({ email: email }, { token })
     res.status(200).send({
       message: 'User login successfully !',
       data: { email, token },
@@ -42,9 +42,8 @@ module.exports.login = async (req, res, next) => {
   }
 }
 
-// Signup controller function
 module.exports.signup = async (req, res, next) => {
-  const {email,password } = req.body  // creating destructuring
+  const { email, password } = req.body
   try {
     const isInvalidRequest = validateRequest(req.body, {
       firstName: true,
@@ -58,29 +57,20 @@ module.exports.signup = async (req, res, next) => {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: email,  // changes from req.body
+      email: email,
     })
-    if (isUserExits) {
+    if (isUserExits && isUserExits.otpVerified) {
       throw new ErrorClass('Already user exits with this email', 400)
     }
     if (
-      !validator.isLength(password, { min: 8 }) ||  // changes from req.body
-      !validator.isEmail(email)  // changes from req.body
+      !validator.isLength(password, { min: 8 }) ||
+      !validator.isEmail(email)
     ) {
       throw new ErrorClass(
         'Password lenght must be greater then 8 and email should be in proper format',
         400,
       )
     }
-
-    const newData = new Signup({
-      ...req.body,
-      mailOTP: null,
-      otpVerified: false,
-      isForgotPassword: false,
-    })
-    const salt = await bcrypt.genSaltSync(10)
-    newData.password = bcrypt.hashSync(password, salt)// changes from req.body
 
     const mailOtp = generateRandomOTP()
     const htmlTemp = mailOTPTemp(mailOtp)
@@ -90,8 +80,21 @@ module.exports.signup = async (req, res, next) => {
       html: htmlTemp,
     }
     await sendEmail(mailOptions)
-    newData.mailOTP = mailOtp
-    await newData.save()
+    const userData = {
+      ...req.body,
+      mailOTP: mailOtp,
+      otpVerified: false,
+      isForgotPassword: false,
+    }
+    const salt = await bcrypt.genSaltSync(10)
+    userData.password = bcrypt.hashSync(password, salt)
+
+    if (isUserExits && !isUserExits.otpVerified) {
+      await Signup.findOneAndUpdate({ email: email }, userData)
+    } else {
+      const insertData = new Signup(userData)
+      await insertData.save()
+    }
 
     res.send({ message: 'Check your mail to verify OTP', status: 200 })
   } catch (err) {
@@ -101,19 +104,19 @@ module.exports.signup = async (req, res, next) => {
 
 //use for verify mail otp and forgot password otp
 module.exports.verifyMailOtp = async (req, res, next) => {
-  const { email } = req.body;  // creating destructuring
+  const { email, isForgotPassword } = req.body
   try {
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
       otp: true,
       isForgotPassword: true,
     })
-    const { isForgotPassword } = req.body     
+
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: email,  // changes from req.body
+      email: email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -124,7 +127,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     if (isUserExits.mailOTP === req.body.otp) {
       if (isForgotPassword) {
         await Signup.updateOne(
-          { email: email },   // changes from req.body
+          { email: email },
           {
             $set: {
               isForgotPassword: true,
@@ -137,7 +140,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
         })
       } else {
         await Signup.updateOne(
-          { email: email },   // changes from req.body
+          { email: email },
           {
             $set: {
               otpVerified: true,
@@ -168,9 +171,9 @@ module.exports.resendMailOTP = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-
+    const { isForgotPassword, email } = req.body
     const isUserExits = await Signup.findOne({
-      email: req.body.email,
+      email: email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -178,12 +181,11 @@ module.exports.resendMailOTP = async (req, res, next) => {
         400,
       )
     }
-    const { isForgotPassword } = req.body
 
     const mailOtp = generateRandomOTP()
     const htmlTemp = mailOTPTemp(mailOtp)
     const mailOptions = {
-      to: req.body.email,
+      to: email,
       subject: 'Horizon Tech signup verification code',
       html: htmlTemp,
     }
@@ -201,7 +203,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
         },
       }
     }
-    await Signup.updateOne({ email: req.body.email }, updateSignupColl)
+    await Signup.updateOne({ email: email }, updateSignupColl)
     res.send({
       message: 'OTP Resended on your mail !',
       status: 200,
@@ -229,7 +231,7 @@ module.exports.setNewPassword = async (req, res, next) => {
       )
     }
     const isUserExits = await Signup.findOne({
-      email: req.body.email,
+      email: email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -240,7 +242,7 @@ module.exports.setNewPassword = async (req, res, next) => {
     const salt = await bcrypt.genSaltSync(10)
     const setNewPassword = bcrypt.hashSync(req.body.newPassword, salt)
     await Signup.updateOne(
-      { email: req.body.email },
+      { email: email },
       {
         $set: {
           password: setNewPassword,
@@ -256,18 +258,12 @@ module.exports.setNewPassword = async (req, res, next) => {
   }
 }
 
-// Logout controller function
 module.exports.logout = async (req, res, next) => {
   try {
-    // TODO: Implement user logout logic here
-
-    // Send a success response if logout is successful
+    await Signup.findOneAndUpdate({ email: req.user.email }, { token: null })
     res.json({ message: 'Logout successful' })
   } catch (error) {
-    // Log the error to the console or your preferred logging mechanism
     console.error(error)
-
-    // Send a 500 Internal Server Error response to the client
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }

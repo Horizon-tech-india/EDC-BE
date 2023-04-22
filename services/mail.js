@@ -19,7 +19,7 @@ async function sendEmail({ to, subject, html }) {
       html,
     }
     mailOptions.from = `Horizon Tech <${process.env.MAIL_ACCOUNT_USER}>`
-    console.log('22', mailOptions)
+
     const res = await transporter.sendMail(mailOptions)
     return res
   } catch (err) {
