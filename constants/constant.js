@@ -2,6 +2,7 @@ exports.MESSAGES = {
   ERROR:{
      INVALID_REQ:"Invalid parameters sent",
      INVALID_USER:"User does not exits with this email,Go for signup",
+     VERIFY_EMAIL:"Please verify your email by entering otp",
      INVALID_PASSWORD:"Please enter the correct credentials",
      USER_EXITS:"Already user exits with this email",
      PASSWORD_LENGTH:"Password lenght must be greater then 8 and email should be in proper format",

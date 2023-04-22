@@ -5,6 +5,7 @@ const ErrorClass = require('../services/error')
 const bcrypt = require('bcryptjs')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
+const { MESSAGES } = require("../constants/constant")
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -14,7 +15,7 @@ module.exports.login = async (req, res, next) => {
       rememberMe: true,
     })
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_REQ, 400) 
     }
     const { email, password, rememberMe } = req.body
 
@@ -22,19 +23,19 @@ module.exports.login = async (req, res, next) => {
       email: email,
     })
     if (!isUserExits) {
-      throw new ErrorClass('User does not exits with this email', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_USER, 400)   
     }
     if (!isUserExits.otpVerified) {
-        throw new ErrorClass('Please verify your email by entering otp', 400)
+        throw new ErrorClass(MESSAGES.ERROR.VERIFY_EMAIL, 400)  
       }
     const passwordMatch = await bcrypt.compare(password, isUserExits.password)
     if (!passwordMatch) {
-      throw new ErrorClass('Please enter the correct credentials', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_PASSWORD, 400)  
     }
     const token = generateToken(isUserExits, rememberMe)
     await Signup.findOneAndUpdate({ email: email }, { token })
     res.status(200).send({
-      message: 'User login successfully !',
+      message: MESSAGES.SUCCESS.MESSAGE,  
       data: { email, token },
     })
   } catch (err) {
@@ -54,20 +55,20 @@ module.exports.signup = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_REQ, 400)  
     }
     const isUserExits = await Signup.findOne({
       email: email,
     })
     if (isUserExits && isUserExits.otpVerified) {
-      throw new ErrorClass('Already user exits with this email', 400)
+      throw new ErrorClass(MESSAGES.ERROR.USER_EXITS, 400) 
     }
     if (
       !validator.isLength(password, { min: 8 }) ||
       !validator.isEmail(email)
     ) {
       throw new ErrorClass(
-        'Password lenght must be greater then 8 and email should be in proper format',
+        MESSAGES.ERROR.PASSWORD_LENGTH,   
         400,
       )
     }
@@ -96,7 +97,7 @@ module.exports.signup = async (req, res, next) => {
       await insertData.save()
     }
 
-    res.send({ message: 'Check your mail to verify OTP', status: 200 })
+    res.send({ message: MESSAGES.SUCCESS.OTP_MESSAGE, status: 200 })  
   } catch (err) {
     next(err)
   }
@@ -113,14 +114,14 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_REQ, 400)   
     }
     const isUserExits = await Signup.findOne({
       email: email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
+        MESSAGES.ERROR.INVALID_USER,  
         400,
       )
     }
@@ -135,7 +136,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
           },
         )
         res.send({
-          message: 'Your OTP is verified, Please set new password  !',
+          message: MESSAGES.MESSAGES.SET_NEW_PASSWORD,  
           status: 200,
         })
       } else {
@@ -148,12 +149,12 @@ module.exports.verifyMailOtp = async (req, res, next) => {
           },
         )
         res.send({
-          message: 'Your email has been verified, Please login  !',
+          message: MESSAGES.SUCCESS.EMAIL_VERIFIED,  
           status: 200,
         })
       }
     } else {
-      throw new ErrorClass('Incorrect OTP please enter again !', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INCORRECT_OTP, 400)  
     }
   } catch (e) {
     next(e)
@@ -169,7 +170,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_REQ, 400)  
     }
     const { isForgotPassword, email } = req.body
     const isUserExits = await Signup.findOne({
@@ -177,7 +178,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
     })
     if (!isUserExits) {
       throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
+        MESSAGES.ERROR.INVALID_USER,    
         400,
       )
     }
@@ -205,7 +206,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
     }
     await Signup.updateOne({ email: email }, updateSignupColl)
     res.send({
-      message: 'OTP Resended on your mail !',
+      message: MESSAGES.SUCCESS.OTP_RESEND,  
       status: 200,
     })
   } catch (e) {
@@ -222,11 +223,11 @@ module.exports.setNewPassword = async (req, res, next) => {
     })
     const { email, newPassword, confirmNewPassword } = req.body
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(MESSAGES.ERROR.INVALID_REQ, 400)  
     }
     if (newPassword !== confirmNewPassword) {
       throw new ErrorClass(
-        'New Password and Confirm New Password does not match !',
+        MESSAGES.ERROR.PASSWORD_MISSMATCH,   
         400,
       )
     }
@@ -235,7 +236,7 @@ module.exports.setNewPassword = async (req, res, next) => {
     })
     if (!isUserExits) {
       throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
+        MESSAGES.ERROR.INVALID_USER,  
         400,
       )
     }
@@ -250,7 +251,7 @@ module.exports.setNewPassword = async (req, res, next) => {
       },
     )
     res.send({
-      message: 'Your password has been changed, please login !',
+      message: MESSAGES.SUCCESS.SET_PASSWORD,  
       status: 200,
     })
   } catch (e) {
@@ -261,9 +262,9 @@ module.exports.setNewPassword = async (req, res, next) => {
 module.exports.logout = async (req, res, next) => {
   try {
     await Signup.findOneAndUpdate({ email: req.user.email }, { token: null })
-    res.json({ message: 'Logout successful' })
+    res.json({ message:  MESSAGES.SUCCESS.LOGOUT_SUCCESSFUL})  
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Internal Server Error' })
+    res.status(500).json({ error: MESSAGES.ERROR.INTERNAL_SERVER_ERROR  }) 
   }
 }
