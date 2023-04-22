@@ -1,8 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose')
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
-const speakeasy = require('speakeasy')
 
 const SignupSchema = new mongoose.Schema({
   firstName: {
@@ -80,6 +77,9 @@ const SignupSchema = new mongoose.Schema({
   isForgotPassword: {
     type: Boolean,
     require: true,
+  },
+  token: {
+    type: String,
   },
   // role: {
   //   type: String,

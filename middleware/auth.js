@@ -9,12 +9,12 @@ const auth = async (req, res, next) => {
   } else {
     try {
       const token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, process.env.secrete)
-
+      const decoded = jwt.verify(token, process.env.TOKEN_KEY)
       const user = await Signup.findOne({
         email: decoded.email,
+        token,
       })
-      if (!user) throw new Error('No employee details found')
+      if (!user) throw new Error('No User Found !')
       req.user = user
       next()
     } catch (error) {
