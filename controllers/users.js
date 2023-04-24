@@ -63,7 +63,9 @@ module.exports.signup = async (req, res, next) => {
       throw new ErrorClass('Already user exits with this email', 400)
     }
     if (
-      !validator.isLength(password, { min: 8 }) ||
+      !/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/.test(
+        password,
+      ) ||
       !validator.isEmail(email)
     ) {
       throw new ErrorClass(

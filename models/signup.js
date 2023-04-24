@@ -41,15 +41,6 @@ const SignupSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    // validate: {
-    //   validator(value) {
-    //     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-    //       value,
-    //     )
-    //   },
-    //   message:
-    //     'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-    // },
   },
   otpVerified: {
     type: Boolean,
