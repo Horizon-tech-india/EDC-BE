@@ -1,4 +1,5 @@
 const Signup = require('../models/signup')
+const StartupSupport = require('../models/userStartupSupport')
 const validator = require('validator')
 const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
@@ -25,8 +26,8 @@ module.exports.login = async (req, res, next) => {
       throw new ErrorClass('User does not exits with this email', 400)
     }
     if (!isUserExits.otpVerified) {
-        throw new ErrorClass('Please verify your email by entering otp', 400)
-      }
+      throw new ErrorClass('Please verify your email by entering otp', 400)
+    }
     const passwordMatch = await bcrypt.compare(password, isUserExits.password)
     if (!passwordMatch) {
       throw new ErrorClass('Please enter the correct credentials', 400)
@@ -35,7 +36,13 @@ module.exports.login = async (req, res, next) => {
     await Signup.findOneAndUpdate({ email: email }, { token })
     res.status(200).send({
       message: 'User login successfully !',
-      data: { email, token },
+      data: {
+        email,
+        token,
+        firstName: isUserExits.firstName,
+        lastName: isUserExits.lastName,
+        phoneNumber: isUserExits.phoneNumber,
+      },
     })
   } catch (err) {
     next(err)
@@ -98,7 +105,7 @@ module.exports.signup = async (req, res, next) => {
       await insertData.save()
     }
 
-    res.send({ message: 'Check your mail to verify OTP', status: 200 })
+    res.send({ message: 'Check your mail to verify OTP', email, status: 200 })
   } catch (err) {
     next(err)
   }
@@ -267,5 +274,48 @@ module.exports.logout = async (req, res, next) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Internal Server Error' })
+  }
+}
+module.exports.userStartupSupport = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.body, {
+      name: true,
+      email: true,
+      contact: true,
+      location: true,
+      institute: true,
+      otherInstitute: true,
+      aadhar: true,
+      category: true,
+      categoryOther: true,
+      otherUniversity: true,
+      otherOrganisation: true,
+      designation: true,
+      enrollmentNum: true,
+      teamSize: true,
+      teamMembers: true,
+      title: true,
+      uniqueFeatures: true,
+      currentStage: true,
+    })
+
+    const { email } = req.body
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
+
+    const isUserExits = await Signup.findOne({
+      email: email,
+    })
+    if (!isUserExits) {
+      throw new ErrorClass('Please enter your registered email !', 400)
+    }
+    const startupData = new StartupSupport({
+      ...req.body,
+    })
+    await startupData.save()
+    res.json({ message: 'Logout successful' })
+  } catch (error) {
+    next(error)
   }
 }

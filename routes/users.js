@@ -3,6 +3,8 @@ const express = require('express'),
   userController = require('../controllers/users'),
   { auth } = require('../middleware/auth')
 
+const { upload } = require('../services/multer')
+
 userRouter.post('/login', userController.login)
 userRouter.post('/signup', userController.signup)
 userRouter.post('/verify-mail-otp', userController.verifyMailOtp)
