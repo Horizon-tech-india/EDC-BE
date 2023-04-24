@@ -30,6 +30,7 @@ const StartupSupportSchema = new mongoose.Schema({
   title: { type: String, required: true },
   uniqueFeatures: { type: String, required: true },
   currentStage: { type: String, required: true },
+  startupId: { type: String, require: true },
 })
 
 const StartupSupport = mongoose.model(

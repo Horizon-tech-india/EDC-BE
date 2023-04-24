@@ -76,7 +76,7 @@ module.exports.signup = async (req, res, next) => {
       !validator.isEmail(email)
     ) {
       throw new ErrorClass(
-        'Password lenght must be greater then 8 and email should be in proper format',
+        'Password length must be greater then 8 should contain uppar,lower,number and special letter  and email should be in proper format',
         400,
       )
     }
@@ -299,9 +299,16 @@ module.exports.userStartupSupport = async (req, res, next) => {
       currentStage: true,
     })
 
-    const { email } = req.body
+    const { email, title, category, location } = req.body
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
+    }
+
+    const isAlreadyApplied = await StartupSupport.findOne({
+      email: email,
+    })
+    if (isAlreadyApplied) {
+      throw new ErrorClass('You have already applied for it !', 400)
     }
 
     const isUserExits = await Signup.findOne({
@@ -310,11 +317,20 @@ module.exports.userStartupSupport = async (req, res, next) => {
     if (!isUserExits) {
       throw new ErrorClass('Please enter your registered email !', 400)
     }
+    const startupId =
+      location.substring(0, 2) +
+      category.substring(0, 2) +
+      title.substring(0, 2) +
+      generateRandomOTP()
     const startupData = new StartupSupport({
       ...req.body,
+      startupId,
     })
     await startupData.save()
-    res.json({ message: 'Logout successful' })
+    res.send({
+      message: 'Your application has been submitted successfully !',
+      status: 200,
+    })
   } catch (error) {
     next(error)
   }
