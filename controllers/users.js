@@ -6,6 +6,7 @@ const ErrorClass = require('../services/error')
 const bcrypt = require('bcryptjs')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
+const { BRANCHES, STATUS } = require('../constants/constant')
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -322,9 +323,12 @@ module.exports.userStartupSupport = async (req, res, next) => {
       category.substring(0, 2) +
       title.substring(0, 2) +
       generateRandomOTP()
+    const branch = BRANCHES[location]
     const startupData = new StartupSupport({
       ...req.body,
       startupId,
+      branch,
+      status: STATUS.PENDING,
     })
     await startupData.save()
     res.send({
