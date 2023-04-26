@@ -18,9 +18,15 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const filters = req.query?.filters?.split(',')
-    const data = await StartupSupport.find({
-      location: { $in: filters },
-    }).select('-__v -_id')
+
+    let data = []
+    if (filters) {
+      data = await StartupSupport.find({
+        location: { $in: filters },
+      }).select('-__v -_id')
+    } else {
+      data = await StartupSupport.find().select('-__v -_id')
+    }
     res.status(200).send({
       message: data.length
         ? 'Fetched the data successfully'
