@@ -1,6 +1,7 @@
 // Importing required modules
 const express = require('express')
 const usersRouter = require('./routes/users')
+const adminRouter = require('./routes/admin')
 const ErrorClass = require('./services/error')
 
 const app = express()
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/users', usersRouter)
+app.use('/admin', adminRouter)
 
 // Define a route handler
 app.get('/', (req, res) => {
