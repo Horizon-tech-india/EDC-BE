@@ -59,7 +59,6 @@ const SignupSchema = new mongoose.Schema({
   mailOTP: {
     type: String,
     // required: true,
-    unique: true,
   },
   isForgotPassword: {
     type: Boolean,
@@ -69,7 +68,7 @@ const SignupSchema = new mongoose.Schema({
     type: String,
   },
   role: { type: String, required: true },
-  branch: { type: [String] },
+  branch: { type: [String], required: false },
   // role: {
   //   type: String,
   //   required: true,
@@ -80,6 +79,14 @@ const SignupSchema = new mongoose.Schema({
   //   type: Date,
   //   default: Date.now,
   // },
+})
+
+SignupSchema.post('save', (error, doc, next) => {
+  if (error.code === 11000) {
+    next({ code: 400, message: 'Phone number should be unique !' })
+  } else {
+    next(error)
+  }
 })
 
 const Signup = mongoose.model('users', SignupSchema)

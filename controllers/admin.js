@@ -6,7 +6,7 @@ const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
-const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
+const { ROLE } = require('../constants/constant')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -68,21 +68,25 @@ module.exports.updateStartupDetails = async (req, res, next) => {
 
 module.exports.createAdmin = async (req, res, next) => {
   try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 400)
+    }
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
       password: true,
       firstName: true,
       lastName: true,
       branch: true,
+      phoneNumber: true,
     })
     const { email, password } = req.body
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-
     const isUserExits = await Signup.findOne({
       email,
     })
+
     if (isUserExits) {
       throw new ErrorClass('Already user exits with this email', 400)
     }
@@ -105,18 +109,11 @@ module.exports.createAdmin = async (req, res, next) => {
     }
     const salt = await bcrypt.genSaltSync(10)
     userData.password = bcrypt.hashSync(password, salt)
-    const { startupId, status } = req.body
-    // await StartupSupport.findOne({ startupId })
-    const result = await StartupSupport.findOneAndUpdate(
-      { startupId },
-      { status },
-    )
-    if (!result) {
-      throw new ErrorClass('Please enter the correct statuId', 400)
-    }
+    const insertData = new Signup(userData)
+    await insertData.save()
 
     res.status(200).send({
-      message: 'Startup has been updated successfully !',
+      message: 'Admin has created successfully !',
     })
   } catch (err) {
     next(err)

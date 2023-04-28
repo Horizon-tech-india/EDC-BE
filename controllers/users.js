@@ -55,6 +55,7 @@ module.exports.login = async (req, res, next) => {
         phoneNumber: isUserExits.phoneNumber,
         role: isUserExits.role,
         tokenExpTime,
+        branch: isUserExits?.branch,
       },
     })
   } catch (err) {
@@ -190,7 +191,6 @@ module.exports.resendMailOTP = async (req, res, next) => {
       email: true,
       isForgotPassword: true,
     })
-
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
@@ -355,66 +355,58 @@ module.exports.userStartupSupport = async (req, res, next) => {
 
 module.exports.fileUpload = async (req, res, next) => {
   try {
-    // const isInvalidRequest = validateRequest(req.body, {
+    const isInvalidRequest = validateRequest(req.file, {
+      fieldname: false,
+      originalname: true,
+      encoding: false,
+      mimetype: false,
+      buffer: true,
+      size: false,
+    })
 
-    // })
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
 
-    // const { email, title, category, location } = req.body
-    // if (isInvalidRequest) {
-    //   throw new ErrorClass('Invalid parameters sent', 400)
-    // }
+    const fileBuffer = Buffer.from(req.file.buffer, 'base64')
 
-    // const isAlreadyApplied = await StartupSupport.findOne({
-    //   email,
-    // })
-    console.log('371', req.file)
-    // const file = req.body.file
-    // const filename = req.body.filename
-
-    // const db = await MongoClient.connect(url);
-    // const collection = db.collection('files')
-
-    // const fileBuffer = Buffer.from(req.file, 'base64')
-    const re = await StartupSupport.updateOne(
-      { email: 'himanshujain044@gmail.com' },
+    await StartupSupport.updateOne(
+      { email: req.user.email },
       {
         $set: {
-          // file: req.buffer,
-          fileName: req.file.filename,
-          uniqueFeatures: 'tgtgtgtgtgtgtgtgtg',
+          file: fileBuffer,
+          fileName: req.file.originalname,
         },
       },
     )
-    console.log('387', re)
-    // await collection.insertOne({ filename: filename, file: fileBuffer });
-
-    // db.close();
 
     res.status(200).json({ message: 'File uploaded successfully' })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: 'Internal server error' })
+    next(err)
   }
 }
+
 module.exports.downloadFile = async (req, res, next) => {
   try {
-    // const id = req.params.id
-    // const db = await MongoClient.connect(url)
-    // const collection = db.collection('files')
-    // const result = await collection.findOne({ _id: ObjectId(id) })
-    // if (result) {
-    //   const fileBuffer = result.file
-    //   res.set({
-    //     'Content-Disposition': `attachment; filename=${result.filename}`,
-    //     'Content-Type': 'application/octet-stream',
-    //   })
-    //   res.send(fileBuffer)
-    // } else {
-    //   res.status(404).json({ message: 'File not found' })
-    // }
-    // db.close()
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
+    const fileData = await StartupSupport.findOne({
+      startupId: req.query.startupId,
+    }).select('file fileName')
+
+    res.set({
+      'Content-Disposition': `attachment; filename=${fileData.fileName}`,
+      'Content-Type': 'application/octet-stream',
+    })
+    res.send(fileData.file)
   } catch (err) {
-    // console.error(err)
-    // res.status(500).json({ message: 'Internal server error' })
+    console.error(err)
+    next(err)
   }
 }

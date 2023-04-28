@@ -15,7 +15,9 @@ userRouter.post('/startup-details', auth, userController.userStartupSupport)
 userRouter.post(
   '/file-upload',
   upload.single('file'),
+  auth,
   userController.fileUpload,
 )
+userRouter.get('/download-file', auth, userController.downloadFile)
 
 module.exports = userRouter
