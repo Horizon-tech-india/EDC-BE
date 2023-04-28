@@ -32,9 +32,15 @@ exports.BRANCHES = {
   'Rajkot Startup Studio': 'RSS',
   'Surat Startup Studio': 'SSS',
 }
+
 exports.STATUS = {
   PENDING: 'pending',
   VERIFIED: 'verified',
   REJECTED: 'rejected',
+}
+exports.ROLE = {
+  ADMIN: 'admin',
+  MASTER_ADMIN: 'master admin',
+  STUDENT: 'student',
 }
 //  you can also make another obj if you req other then msg okay just an exmaple

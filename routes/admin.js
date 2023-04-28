@@ -14,4 +14,6 @@ adminRouter.patch(
   adminController.updateStartupDetails,
 )
 
+adminRouter.post('/create-admin', auth, adminController.createAdmin)
+
 module.exports = adminRouter

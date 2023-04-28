@@ -12,5 +12,10 @@ userRouter.post('/resend-otp', userController.resendMailOTP)
 userRouter.post('/set-new-password', userController.setNewPassword)
 userRouter.get('/logout', auth, userController.logout)
 userRouter.post('/startup-details', auth, userController.userStartupSupport)
+userRouter.post(
+  '/file-upload',
+  upload.single('file'),
+  userController.fileUpload,
+)
 
 module.exports = userRouter

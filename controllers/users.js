@@ -1,12 +1,12 @@
+const bcrypt = require('bcryptjs')
+const validator = require('validator')
 const Signup = require('../models/signup')
 const StartupSupport = require('../models/userStartupSupport')
-const validator = require('validator')
 const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
-const bcrypt = require('bcryptjs')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
-const { BRANCHES, STATUS } = require('../constants/constant')
+const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -21,7 +21,7 @@ module.exports.login = async (req, res, next) => {
     const { email, password, rememberMe } = req.body
 
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (!isUserExits) {
       throw new ErrorClass('User does not exits with this email', 400)
@@ -33,8 +33,18 @@ module.exports.login = async (req, res, next) => {
     if (!passwordMatch) {
       throw new ErrorClass('Please enter the correct credentials', 400)
     }
+    const now = new Date()
+
+    // Add 60 minutes to the current time
+    let tokenExpTime = new Date(now.getTime() + 60 * 60 * 1000)
+    if (rememberMe) {
+      tokenExpTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    }
+    // Output the future time
+
+    // console.log(tokenExpTime)
     const token = generateToken(isUserExits, rememberMe)
-    await Signup.findOneAndUpdate({ email: email }, { token })
+    await Signup.findOneAndUpdate({ email }, { token })
     res.status(200).send({
       message: 'User login successfully !',
       data: {
@@ -43,6 +53,8 @@ module.exports.login = async (req, res, next) => {
         firstName: isUserExits.firstName,
         lastName: isUserExits.lastName,
         phoneNumber: isUserExits.phoneNumber,
+        role: isUserExits.role,
+        tokenExpTime,
       },
     })
   } catch (err) {
@@ -65,7 +77,7 @@ module.exports.signup = async (req, res, next) => {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (isUserExits && isUserExits.otpVerified) {
       throw new ErrorClass('Already user exits with this email', 400)
@@ -95,12 +107,13 @@ module.exports.signup = async (req, res, next) => {
       mailOTP: mailOtp,
       otpVerified: false,
       isForgotPassword: false,
+      role: ROLE.STUDENT,
     }
     const salt = await bcrypt.genSaltSync(10)
     userData.password = bcrypt.hashSync(password, salt)
 
     if (isUserExits && !isUserExits.otpVerified) {
-      await Signup.findOneAndUpdate({ email: email }, userData)
+      await Signup.findOneAndUpdate({ email }, userData)
     } else {
       const insertData = new Signup(userData)
       await insertData.save()
@@ -112,7 +125,7 @@ module.exports.signup = async (req, res, next) => {
   }
 }
 
-//use for verify mail otp and forgot password otp
+// use for verify mail otp and forgot password otp
 module.exports.verifyMailOtp = async (req, res, next) => {
   const { email, isForgotPassword } = req.body
   try {
@@ -126,7 +139,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -137,7 +150,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     if (isUserExits.mailOTP === req.body.otp) {
       if (isForgotPassword) {
         await Signup.updateOne(
-          { email: email },
+          { email },
           {
             $set: {
               isForgotPassword: true,
@@ -150,7 +163,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
         })
       } else {
         await Signup.updateOne(
-          { email: email },
+          { email },
           {
             $set: {
               otpVerified: true,
@@ -170,7 +183,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
   }
 }
 
-//use for forgot password and resend mail otp
+// use for forgot password and resend mail otp
 module.exports.resendMailOTP = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.body, {
@@ -183,7 +196,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
     }
     const { isForgotPassword, email } = req.body
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -213,7 +226,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
         },
       }
     }
-    await Signup.updateOne({ email: email }, updateSignupColl)
+    await Signup.updateOne({ email }, updateSignupColl)
     res.send({
       message: 'OTP Resended on your mail !',
       status: 200,
@@ -241,7 +254,7 @@ module.exports.setNewPassword = async (req, res, next) => {
       )
     }
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (!isUserExits) {
       throw new ErrorClass(
@@ -252,7 +265,7 @@ module.exports.setNewPassword = async (req, res, next) => {
     const salt = await bcrypt.genSaltSync(10)
     const setNewPassword = bcrypt.hashSync(req.body.newPassword, salt)
     await Signup.updateOne(
-      { email: email },
+      { email },
       {
         $set: {
           password: setNewPassword,
@@ -306,14 +319,14 @@ module.exports.userStartupSupport = async (req, res, next) => {
     }
 
     const isAlreadyApplied = await StartupSupport.findOne({
-      email: email,
+      email,
     })
     if (isAlreadyApplied) {
       throw new ErrorClass('You have already applied for it !', 400)
     }
 
     const isUserExits = await Signup.findOne({
-      email: email,
+      email,
     })
     if (!isUserExits) {
       throw new ErrorClass('Please enter your registered email !', 400)
@@ -337,5 +350,71 @@ module.exports.userStartupSupport = async (req, res, next) => {
     })
   } catch (error) {
     next(error)
+  }
+}
+
+module.exports.fileUpload = async (req, res, next) => {
+  try {
+    // const isInvalidRequest = validateRequest(req.body, {
+
+    // })
+
+    // const { email, title, category, location } = req.body
+    // if (isInvalidRequest) {
+    //   throw new ErrorClass('Invalid parameters sent', 400)
+    // }
+
+    // const isAlreadyApplied = await StartupSupport.findOne({
+    //   email,
+    // })
+    console.log('371', req.file)
+    // const file = req.body.file
+    // const filename = req.body.filename
+
+    // const db = await MongoClient.connect(url);
+    // const collection = db.collection('files')
+
+    // const fileBuffer = Buffer.from(req.file, 'base64')
+    const re = await StartupSupport.updateOne(
+      { email: 'himanshujain044@gmail.com' },
+      {
+        $set: {
+          // file: req.buffer,
+          fileName: req.file.filename,
+          uniqueFeatures: 'tgtgtgtgtgtgtgtgtg',
+        },
+      },
+    )
+    console.log('387', re)
+    // await collection.insertOne({ filename: filename, file: fileBuffer });
+
+    // db.close();
+
+    res.status(200).json({ message: 'File uploaded successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Internal server error' })
+  }
+}
+module.exports.downloadFile = async (req, res, next) => {
+  try {
+    // const id = req.params.id
+    // const db = await MongoClient.connect(url)
+    // const collection = db.collection('files')
+    // const result = await collection.findOne({ _id: ObjectId(id) })
+    // if (result) {
+    //   const fileBuffer = result.file
+    //   res.set({
+    //     'Content-Disposition': `attachment; filename=${result.filename}`,
+    //     'Content-Type': 'application/octet-stream',
+    //   })
+    //   res.send(fileBuffer)
+    // } else {
+    //   res.status(404).json({ message: 'File not found' })
+    // }
+    // db.close()
+  } catch (err) {
+    // console.error(err)
+    // res.status(500).json({ message: 'Internal server error' })
   }
 }

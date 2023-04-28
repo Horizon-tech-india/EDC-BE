@@ -24,6 +24,9 @@ const StartupSupportSchema = new mongoose.Schema({
   startupId: { type: String, require: true },
   status: { type: String, require: true },
   branch: { type: String, require: true },
+  fileName: { type: String },
+  file: { type: Buffer },
+  fileContentType: String,
 })
 
 const StartupSupport = mongoose.model(
