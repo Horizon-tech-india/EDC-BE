@@ -119,3 +119,57 @@ module.exports.createAdmin = async (req, res, next) => {
     next(err)
   }
 }
+
+module.exports.deleteAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 400)
+    }
+    const isInvalidRequest = validateRequest(req.query, {
+      email: true,
+    })
+    const { email } = req.query
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
+    const isUserExits = await Signup.findOneAndDelete({
+      email,
+      role: ROLE.ADMIN,
+    })
+
+    if (!isUserExits) {
+      throw new ErrorClass(
+        'No admin present with email which you have provided',
+        400,
+      )
+    }
+
+    res.status(200).send({
+      message: 'Admin has deleted successfully !',
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getAllAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 400)
+    }
+
+    const allAdminData = await Signup.find({
+      role: ROLE.ADMIN,
+    })
+
+    res.status(200).send({
+      message: allAdminData.length
+        ? 'fetched all the admin successfully !'
+        : 'No admin found !',
+      count: allAdminData.length ? allAdminData.length : 0,
+      data: allAdminData,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
