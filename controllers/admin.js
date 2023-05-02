@@ -6,7 +6,8 @@ const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
-const { ROLE } = require('../constants/constant')
+const { ROLE, ACTIVITY } = require('../constants/constant')
+const EventMeeting = require('../models/eventMeeting')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -168,6 +169,46 @@ module.exports.getAllAdmin = async (req, res, next) => {
         : 'No admin found !',
       count: allAdminData.length ? allAdminData.length : 0,
       data: allAdminData,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+module.exports.scheduleEventOrMeeting = async (req, res, next) => {
+  try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 400)
+    }
+    const isInvalidRequest = validateRequest(req.body, {
+      title: true,
+      members: false,
+      filters: false,
+      type: true,
+      link: true,
+      dateAndTime: true,
+    })
+    const { title, members, type, link, dateAndTime } = req.body
+
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
+    if (type === ACTIVITY.MEETING) {
+      const data = new EventMeeting({
+        title,
+        members,
+        link,
+        dateAndTime,
+        type,
+        createdByEmail: req.user.email,
+        createdByName: req.user.firstName,
+      })
+      await data.save()
+    }
+    res.status(200).send({
+      message:
+        type === ACTIVITY.MEETING
+          ? 'Meeting scheduled successfully !'
+          : 'Event scheduled successfully !',
     })
   } catch (err) {
     next(err)

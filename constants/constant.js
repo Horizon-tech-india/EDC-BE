@@ -33,14 +33,19 @@ exports.BRANCHES = {
   'Surat Startup Studio': 'SSS',
 }
 
-exports.STATUS = {
+exports.STATUS = Object.freeze({
   PENDING: 'pending',
   VERIFIED: 'verified',
   REJECTED: 'rejected',
-}
+})
 exports.ROLE = {
   ADMIN: 'admin',
   MASTER_ADMIN: 'master admin',
   STUDENT: 'student',
+}
+
+exports.ACTIVITY = {
+  MEETING: 'meeting',
+  EVENT: 'event',
 }
 //  you can also make another obj if you req other then msg okay just an exmaple

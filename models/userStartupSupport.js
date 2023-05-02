@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose')
 const validator = require('validator')
+const { STATUS } = require('../constants/constant')
 
 const StartupSupportSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -22,7 +23,7 @@ const StartupSupportSchema = new mongoose.Schema({
   uniqueFeatures: { type: String, required: true },
   currentStage: { type: String, required: true },
   startupId: { type: String, require: true },
-  status: { type: String, require: true },
+  status: { type: String, require: true, enum: Object.values(STATUS) },
   branch: { type: String, require: true },
   fileName: { type: String },
   file: { type: Buffer },

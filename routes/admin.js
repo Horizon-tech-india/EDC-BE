@@ -17,4 +17,9 @@ adminRouter.patch(
 adminRouter.post('/create-admin', auth, adminController.createAdmin)
 adminRouter.get('/delete-admin', auth, adminController.deleteAdmin)
 adminRouter.get('/get-all-admin', auth, adminController.getAllAdmin)
+adminRouter.post(
+  '/schedule-event-meeting',
+  auth,
+  adminController.scheduleEventOrMeeting,
+)
 module.exports = adminRouter
