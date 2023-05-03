@@ -22,4 +22,10 @@ adminRouter.post(
   auth,
   adminController.scheduleEventOrMeeting,
 )
+adminRouter.get(
+  '/get-lastmonth-startups',
+  auth,
+  adminController.getLastMonthStartups,
+)
+
 module.exports = adminRouter

@@ -11,6 +11,9 @@ const EventMeeting = require('../models/eventMeeting')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 403)
+    }
     const isInvalidRequest = validateRequest(req.query, {
       filters: false,
     })
@@ -41,6 +44,9 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
 
 module.exports.updateStartupDetails = async (req, res, next) => {
   try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 403)
+    }
     const isInvalidRequest = validateRequest(req.body, {
       startupId: true,
       status: true,
@@ -70,7 +76,7 @@ module.exports.updateStartupDetails = async (req, res, next) => {
 module.exports.createAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 400)
+      throw new ErrorClass('Only master admin has access !', 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
@@ -124,7 +130,7 @@ module.exports.createAdmin = async (req, res, next) => {
 module.exports.deleteAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 400)
+      throw new ErrorClass('Only master admin has access !', 403)
     }
     const isInvalidRequest = validateRequest(req.query, {
       email: true,
@@ -156,7 +162,7 @@ module.exports.deleteAdmin = async (req, res, next) => {
 module.exports.getAllAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 400)
+      throw new ErrorClass('Only master admin has access !', 403)
     }
 
     const allAdminData = await Signup.find({
@@ -174,10 +180,11 @@ module.exports.getAllAdmin = async (req, res, next) => {
     next(err)
   }
 }
+
 module.exports.scheduleEventOrMeeting = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 400)
+      throw new ErrorClass('Only master admin has access !', 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       title: true,
@@ -203,9 +210,9 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
     })
     if (type !== ACTIVITY.MEETING) {
       const result = await StartupSupport.find({ $or: filters })
-      console.log('206')
+
       const eventMembers = result.map((startup) => startup.email)
-      console.log(eventMembers)
+
       data.members = eventMembers
       data.filters = filters
     }
@@ -215,6 +222,40 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
         type === ACTIVITY.MEETING
           ? 'Meeting scheduled successfully !'
           : 'Event scheduled successfully !',
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getLastMonthStartups = async (req, res, next) => {
+  try {
+    if (req.user.role !== ROLE.MASTER_ADMIN) {
+      throw new ErrorClass('Only master admin has access !', 403)
+    }
+
+    const isInvalidRequest = validateRequest(req.query, {
+      days: false,
+    })
+    const { email, password } = req.body
+    if (isInvalidRequest) {
+      throw new ErrorClass('Invalid parameters sent', 400)
+    }
+    const days = req?.query?.days || 30
+
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - days)
+
+    const data = await StartupSupport.find({
+      createdAt: { $gte: thirtyDaysAgo },
+    })
+
+    res.status(200).send({
+      message: data.length
+        ? 'fetched last 30 days startups successfully !'
+        : 'No startup found !',
+      count: data.length ? data.length : 0,
+      data,
     })
   } catch (err) {
     next(err)
