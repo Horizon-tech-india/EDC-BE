@@ -1,6 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose')
 
+const { Schema } = mongoose
+
 const EventMeetingSchema = new mongoose.Schema({
   title: { type: String, required: true },
   link: { type: String, required: true },
@@ -10,6 +12,7 @@ const EventMeetingSchema = new mongoose.Schema({
     required: true,
   },
   type: { type: String, required: true },
+  filters: [{ type: Schema.Types.Mixed }],
   createdByName: { type: String, required: true },
   createdByEmail: { type: String, required: true },
 })

@@ -187,23 +187,29 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       link: true,
       dateAndTime: true,
     })
-    const { title, members, type, link, dateAndTime } = req.body
+    const { title, members, type, link, dateAndTime, filters } = req.body
 
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
-    if (type === ACTIVITY.MEETING) {
-      const data = new EventMeeting({
-        title,
-        members,
-        link,
-        dateAndTime,
-        type,
-        createdByEmail: req.user.email,
-        createdByName: req.user.firstName,
-      })
-      await data.save()
+    const data = new EventMeeting({
+      title,
+      members,
+      link,
+      dateAndTime,
+      type,
+      createdByEmail: req.user.email,
+      createdByName: req.user.firstName,
+    })
+    if (type !== ACTIVITY.MEETING) {
+      const result = await StartupSupport.find({ $or: filters })
+      console.log('206')
+      const eventMembers = result.map((startup) => startup.email)
+      console.log(eventMembers)
+      data.members = eventMembers
+      data.filters = filters
     }
+    await data.save()
     res.status(200).send({
       message:
         type === ACTIVITY.MEETING
