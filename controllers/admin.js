@@ -183,9 +183,6 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 module.exports.scheduleEventOrMeeting = async (req, res, next) => {
   try {
-    if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
-    }
     const isInvalidRequest = validateRequest(req.body, {
       title: true,
       members: false,
@@ -230,14 +227,10 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
 
 module.exports.getLastMonthStartups = async (req, res, next) => {
   try {
-    if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
-    }
-
     const isInvalidRequest = validateRequest(req.query, {
       days: false,
     })
-    const { email, password } = req.body
+
     if (isInvalidRequest) {
       throw new ErrorClass('Invalid parameters sent', 400)
     }
@@ -252,10 +245,43 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
 
     res.status(200).send({
       message: data.length
-        ? 'fetched last 30 days startups successfully !'
+        ? `fetched last ${days} days startups successfully !`
         : 'No startup found !',
       count: data.length ? data.length : 0,
       data,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getAllMeetingAndEvent = async (req, res, next) => {
+  try {
+    const { email } = req.user
+
+    const data = await EventMeeting.find({
+      createdByEmail: email,
+    }).select('-_id -__v -createdByName -createdByEmail')
+
+    const meetings = []
+    const events = []
+    if (data.length) {
+      data.forEach((meetingOrEvent) => {
+        if (meetingOrEvent.type === ACTIVITY.MEETING) {
+          meetings.push(meetingOrEvent)
+        } else {
+          events.push(meetingOrEvent)
+        }
+      })
+    }
+    res.status(200).send({
+      message: data.length
+        ? 'All the events and meeting are fetched successfully '
+        : 'No Event or Meeting found !',
+      meetingCount: meetings.length ? meetings.length : 0,
+      eventCount: events.length ? events.length : 0,
+      meetings,
+      events,
     })
   } catch (err) {
     next(err)

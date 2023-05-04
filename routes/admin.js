@@ -27,5 +27,10 @@ adminRouter.get(
   auth,
   adminController.getLastMonthStartups,
 )
+adminRouter.get(
+  '/get-all-meeting-and-events',
+  auth,
+  adminController.getAllMeetingAndEvent,
+)
 
 module.exports = adminRouter
