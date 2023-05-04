@@ -7,6 +7,10 @@ const ErrorClass = require('../services/error')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
 const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
+const { passwordRegex } = require('.././constants/regex')
+const {
+  MESSAGES: { ERROR },
+} = require('../constants/constant')
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -16,7 +20,7 @@ module.exports.login = async (req, res, next) => {
       rememberMe: true,
     })
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const { email, password, rememberMe } = req.body
 
@@ -75,7 +79,7 @@ module.exports.signup = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const isUserExits = await Signup.findOne({
       email,
@@ -83,12 +87,7 @@ module.exports.signup = async (req, res, next) => {
     if (isUserExits && isUserExits.otpVerified) {
       throw new ErrorClass('Already user exits with this email', 400)
     }
-    if (
-      !/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/.test(
-        password,
-      ) ||
-      !validator.isEmail(email)
-    ) {
+    if (!passwordRegex.test(password) || !validator.isEmail(email)) {
       throw new ErrorClass(
         'Password length must be greater then 8 should contain uppar,lower,number and special letter  and email should be in proper format',
         400,
@@ -137,7 +136,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const isUserExits = await Signup.findOne({
       email,
@@ -192,7 +191,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
       isForgotPassword: true,
     })
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const { isForgotPassword, email } = req.body
     const isUserExits = await Signup.findOne({
@@ -245,7 +244,7 @@ module.exports.setNewPassword = async (req, res, next) => {
     })
     const { email, newPassword, confirmNewPassword } = req.body
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     if (newPassword !== confirmNewPassword) {
       throw new ErrorClass(
@@ -315,7 +314,7 @@ module.exports.userStartupSupport = async (req, res, next) => {
 
     const { email, title, category, location } = req.body
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
 
     const isAlreadyApplied = await StartupSupport.findOne({
@@ -365,7 +364,7 @@ module.exports.fileUpload = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
 
     const fileBuffer = Buffer.from(req.file.buffer, 'base64')
@@ -394,7 +393,7 @@ module.exports.downloadFile = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const fileData = await StartupSupport.findOne({
       startupId: req.query.startupId,

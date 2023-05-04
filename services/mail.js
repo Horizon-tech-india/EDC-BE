@@ -66,7 +66,7 @@ function mailOTPTemp(mailOTP) {
   </head>
   <body>
     <h1>Verification Process from Horizon Tech as you have Signup</h1>
-    <p>Your OTP is ${mailOTP}</p>
+    <p>Your OTP is <b>${mailOTP}</b></p>
   </body>
 </html>`
 }
