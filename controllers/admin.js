@@ -1,17 +1,15 @@
 const bcrypt = require('bcryptjs')
-const validator = require('validator')
 const Signup = require('../models/signup')
 const StartupSupport = require('../models/userStartupSupport')
 const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
-const { generateRandomOTP, generateToken } = require('../services/common.utils')
-const { sendEmail, mailOTPTemp } = require('../services/mail')
 const { ROLE, ACTIVITY } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
 const { passwordRegex } = require('.././constants/regex')
 const {
   MESSAGES: { ADMIN, ERROR },
 } = require('../constants/constant')
+const { STATUS } = require('../constants/constant')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -242,12 +240,21 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
       createdAt: { $gte: thirtyDaysAgo },
     })
 
+    const totalCount = data?.length || 0,
+      approvedCount =
+        data?.filter((item) => item.status === STATUS.VERIFIED)?.length || 0,
+      pendingCount =
+        data?.filter((item) => item.status === STATUS.PENDING)?.length || 0
+
     res.status(200).send({
-      message: data.length
+      message: totalCount
         ? `fetched last ${days} days startups successfully !`
         : 'No startup found !',
-      count: data.length ? data.length : 0,
-      data,
+      data: {
+        approvedCount,
+        pendingCount,
+        totalCount,
+      },
     })
   } catch (err) {
     next(err)

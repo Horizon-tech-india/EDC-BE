@@ -8,20 +8,13 @@ const SignupSchema = new mongoose.Schema(
       required: true,
       minlength: [3, 'Minimum 3 letters required'],
       maxlength: [20, 'Maximum 20 letters allowed'],
-      // lowercase: true,
     },
     lastName: {
       type: String,
       required: true,
       minlength: [3, 'Minimum 3 letters required'],
       maxlength: [20, 'Maximum 20 letters allowed'],
-      // lowercase: true,
     },
-    // profession: {
-    //   type: String,
-    //   // enum: ['student', 'coordinator'],
-    //   required: true,
-    // },
     email: {
       type: String,
       required: true,
@@ -43,23 +36,8 @@ const SignupSchema = new mongoose.Schema(
       type: Boolean,
       require: true,
     },
-    // startupName: {
-    //   type: String,
-    //   required: true,
-    //   index: true,
-    // },
-    // applyingTo: {
-    //   type: String,
-    //   required: true,
-    //   index: true,
-    // },
-    // website: {
-    //   type: String,
-    //   required: true,
-    // },
     mailOTP: {
       type: String,
-      // required: true,
     },
     isForgotPassword: {
       type: Boolean,
@@ -70,16 +48,6 @@ const SignupSchema = new mongoose.Schema(
     },
     role: { type: String, required: true },
     branch: { type: [String], required: false },
-    // role: {
-    //   type: String,
-    //   required: true,
-    //   enum: ['admin', 'user'],
-    //   default: 'user',
-    // },
-    // date: {
-    //   type: Date,
-    //   default: Date.now,
-    // },
   },
   {
     timestamps: true,

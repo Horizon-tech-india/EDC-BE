@@ -46,7 +46,6 @@ module.exports.login = async (req, res, next) => {
     }
     // Output the future time
 
-    // console.log(tokenExpTime)
     const token = generateToken(isUserExits, rememberMe)
     await Signup.findOneAndUpdate({ email }, { token })
     res.status(200).send({

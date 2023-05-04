@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose')
-const validator = require('validator')
+
 const { STATUS } = require('../constants/constant')
 
 const StartupSupportSchema = new mongoose.Schema(
