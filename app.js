@@ -28,7 +28,7 @@ app.use('/admin', adminRouter)
 
 // Define a route handler
 app.get('/', (req, res) => {
-  res.send('Hello, World!')
+  res.send('Welcome to EDC backend server!!!')
 })
 
 // Handling all other routes with a 404 error

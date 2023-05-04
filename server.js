@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-const fs = require('fs')
-const https = require('https')
 const http = require('http')
 const mongoose = require('mongoose')
 const app = require('./app')
