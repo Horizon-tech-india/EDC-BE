@@ -22,6 +22,10 @@ exports.MESSAGES = {
     LOGOUT_SUCCESSFUL: 'Logout successful',
   },
 
+  ADMIN: {
+    MASTER_ACCESS: 'Only master admin has access !',
+  },
+
   //    pass key value pair here as an obj
 }
 exports.BRANCHES = {

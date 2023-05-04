@@ -8,18 +8,22 @@ const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
 const { ROLE, ACTIVITY } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
+const { passwordRegex } = require('.././constants/regex')
+const {
+  MESSAGES: { ADMIN, ERROR },
+} = require('../constants/constant')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.query, {
       filters: false,
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const filters = req.query?.filters?.split(',')
 
@@ -45,7 +49,7 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
 module.exports.updateStartupDetails = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       startupId: true,
@@ -53,7 +57,7 @@ module.exports.updateStartupDetails = async (req, res, next) => {
     })
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const { startupId, status } = req.body
     // await StartupSupport.findOne({ startupId })
@@ -76,7 +80,7 @@ module.exports.updateStartupDetails = async (req, res, next) => {
 module.exports.createAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       email: true,
@@ -88,7 +92,7 @@ module.exports.createAdmin = async (req, res, next) => {
     })
     const { email, password } = req.body
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const isUserExits = await Signup.findOne({
       email,
@@ -97,12 +101,7 @@ module.exports.createAdmin = async (req, res, next) => {
     if (isUserExits) {
       throw new ErrorClass('Already user exits with this email', 400)
     }
-    if (
-      !/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/.test(
-        password,
-      ) ||
-      !validator.isEmail(email)
-    ) {
+    if (!passwordRegex.test(password)) {
       throw new ErrorClass(
         'Password length must be greater then 8 should contain uppar,lower,number and special letter  and email should be in proper format',
         400,
@@ -130,14 +129,14 @@ module.exports.createAdmin = async (req, res, next) => {
 module.exports.deleteAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.query, {
       email: true,
     })
     const { email } = req.query
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const isUserExits = await Signup.findOneAndDelete({
       email,
@@ -162,7 +161,7 @@ module.exports.deleteAdmin = async (req, res, next) => {
 module.exports.getAllAdmin = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
 
     const allAdminData = await Signup.find({
@@ -184,7 +183,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 module.exports.scheduleEventOrMeeting = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       title: true,
@@ -197,7 +196,7 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
     const { title, members, type, link, dateAndTime, filters } = req.body
 
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const data = new EventMeeting({
       title,
@@ -231,7 +230,7 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
 module.exports.getLastMonthStartups = async (req, res, next) => {
   try {
     if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass('Only master admin has access !', 403)
+      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
     }
 
     const isInvalidRequest = validateRequest(req.query, {
@@ -239,7 +238,7 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
     })
     const { email, password } = req.body
     if (isInvalidRequest) {
-      throw new ErrorClass('Invalid parameters sent', 400)
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const days = req?.query?.days || 30
 
