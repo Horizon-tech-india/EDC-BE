@@ -7,7 +7,7 @@ const ErrorClass = require('../services/error')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
 const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
-const { passwordRegex } = require('.././constants/regex')
+const { passwordRegex } = require('../constants/regex')
 const {
   MESSAGES: { ERROR },
 } = require('../constants/constant')

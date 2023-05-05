@@ -5,7 +5,7 @@ const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
 const { ROLE, ACTIVITY } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
-const { passwordRegex } = require('.././constants/regex')
+const { passwordRegex } = require('../constants/regex')
 const {
   MESSAGES: { ADMIN, ERROR },
 } = require('../constants/constant')
