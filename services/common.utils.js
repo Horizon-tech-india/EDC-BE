@@ -36,3 +36,7 @@ module.exports.generateToken = (user, rememberMe = false) => {
   )
 }
 // function lke gen token,decypt password will be come in this utils file
+
+module.exports.validateDateFormat = (dateString, regex) => {
+  return regex.test(dateString)
+}
