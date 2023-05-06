@@ -13,30 +13,36 @@ const { STATUS } = require('../constants/constant')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
-    if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
-    }
     const isInvalidRequest = validateRequest(req.query, {
-      filters: false,
+      title: false,
     })
 
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
-    const filters = req.query?.filters?.split(',')
-
+    const filters = req.user.branch
+    const { title } = req.query
+    const regex = new RegExp(title, 'i')
+    const mongoFilters = {
+      $and: [
+        {
+          location: { $in: filters },
+        },
+        { title: { $regex: regex } },
+      ],
+    }
     let data = []
     if (filters) {
-      data = await StartupSupport.find({
-        location: { $in: filters },
-      }).select('-__v -_id')
+      data = await StartupSupport.find(mongoFilters).select('-__v -_id')
     } else {
       data = await StartupSupport.find().select('-__v -_id')
     }
+
     res.status(200).send({
       message: data.length
         ? 'Fetched the data successfully'
         : 'No results found !',
+      count: data.length,
       data,
     })
   } catch (err) {
