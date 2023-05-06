@@ -10,6 +10,7 @@ exports.MESSAGES = {
     PASSWORD_MISSMATCH:
       'New Password and Confirm New Password does not match !',
     INTERNAL_SERVER_ERROR: 'Internal Server Error',
+    INVALID_DATE_FORMAT: 'Invalid date format',
   },
 
   SUCCESS: {
