@@ -1,11 +1,14 @@
 const bcrypt = require('bcryptjs')
 const Signup = require('../models/signup')
 const StartupSupport = require('../models/userStartupSupport')
-const { validateRequest } = require('../services/common.utils')
+const {
+  validateRequest,
+  validateDateFormat,
+} = require('../services/common.utils')
 const ErrorClass = require('../services/error')
 const { ROLE, ACTIVITY } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
-const { passwordRegex } = require('.././constants/regex')
+const { passwordRegex, dateFormatRegex } = require('.././constants/regex')
 const {
   MESSAGES: { ADMIN, ERROR },
 } = require('../constants/constant')
@@ -164,7 +167,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
     const allAdminData = await Signup.find({
       role: ROLE.ADMIN,
-    })
+    }).select('-_id firstName lastName email phoneNumber role branch')
 
     res.status(200).send({
       message: allAdminData.length
@@ -240,11 +243,17 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
       createdAt: { $gte: thirtyDaysAgo },
     })
 
-    const totalCount = data?.length || 0,
-      approvedCount =
-        data?.filter((item) => item.status === STATUS.VERIFIED)?.length || 0,
-      pendingCount =
-        data?.filter((item) => item.status === STATUS.PENDING)?.length || 0
+    const totalCount = data.length
+    let approvedCount = 0,
+      pendingCount = 0
+
+    data.forEach((startup) => {
+      if (startup.status === STATUS.VERIFIED) {
+        approvedCount++
+      } else if (startup.status === STATUS.PENDING) {
+        pendingCount++
+      }
+    })
 
     res.status(200).send({
       message: totalCount
@@ -263,11 +272,38 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
 
 module.exports.getAllMeetingAndEvent = async (req, res, next) => {
   try {
-    const { email } = req.user
+    const isInvalidRequest = validateRequest(req.query, {
+      date: false,
+    })
 
-    const data = await EventMeeting.find({
-      createdByEmail: email,
-    }).select('-_id -__v -createdByName -createdByEmail')
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+
+    const { email } = req.user
+    const { date } = req.query
+    let data = []
+
+    if (date) {
+      // Validate the date format
+      if (!validateDateFormat(date, dateFormatRegex)) {
+        throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
+      }
+      // Set the start and end dates for the selected date
+      startDate = new Date(date)
+      endDate = new Date(date)
+      endDate.setDate(endDate.getDate() + 1) // Add one day to the end date
+
+      // Retrieve the logged-in user's events and meetings based on the date
+      data = await EventMeeting.find({
+        createdByEmail: email,
+        dateAndTime: { $gte: startDate, $lt: endDate },
+      }).select('-_id -__v -createdByName -createdByEmail')
+    } else {
+      data = await EventMeeting.find({
+        createdByEmail: email,
+      }).select('-_id -__v -createdByName -createdByEmail')
+    }
 
     const meetings = []
     const events = []
