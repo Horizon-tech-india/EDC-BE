@@ -194,13 +194,21 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       members: false,
       filters: false,
       type: true,
-      link: true,
+      link: false,
       dateAndTime: true,
+      description: false,
     })
-    const { title, members, type, link, dateAndTime, filters } = req.body
+    const { title, members, type, link, dateAndTime, filters, description } =
+      req.body
 
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    if (type === ACTIVITY.EVENT && !description?.length) {
+      throw new ErrorClass('Description should not be empty', 400)
+    }
+    if (type === ACTIVITY.MEETING && !link?.length) {
+      throw new ErrorClass('Link should not be empty', 400)
     }
     const data = new EventMeeting({
       title,
@@ -208,10 +216,11 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       link,
       dateAndTime,
       type,
+      description,
       createdByEmail: req.user.email,
       createdByName: req.user.firstName,
     })
-    if (type !== ACTIVITY.MEETING) {
+    if (type !== ACTIVITY.MEETING && filters && filters.length) {
       const result = await StartupSupport.find({ $or: filters })
 
       const eventMembers = result.map((startup) => startup.email)
