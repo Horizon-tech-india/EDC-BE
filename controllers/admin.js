@@ -305,8 +305,8 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
         throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
       }
       // Set the start and end dates for the selected date
-      startDate = new Date(date)
-      endDate = new Date(date)
+      const startDate = new Date(date)
+      const endDate = new Date(date)
       endDate.setDate(endDate.getDate() + 1) // Add one day to the end date
 
       // Retrieve the logged-in user's events and meetings based on the date
