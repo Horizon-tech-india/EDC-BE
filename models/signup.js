@@ -43,9 +43,11 @@ const SignupSchema = new mongoose.Schema(
       type: Boolean,
       require: true,
     },
-    token: {
-      type: String,
-    },
+    token: [
+      {
+        type: String,
+      },
+    ],
     role: { type: String, required: true },
     branch: { type: [String], required: false },
   },
