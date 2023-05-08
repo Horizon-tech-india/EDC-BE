@@ -295,9 +295,9 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
 
-    const { email } = req.user
+    const { email, role } = req.user
     const { date } = req.query
-    const query = { createdByEmail: email }
+    const query = role === ROLE.MASTER_ADMIN ? {} : { createdByEmail: email }
     let data = [],
       startDate,
       endDate
@@ -315,9 +315,7 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
     }
 
     // Retrieve the logged-in user's events and meetings based on the query
-    data = await EventMeeting.find(query).select(
-      '-_id -__v -createdByName -createdByEmail',
-    )
+    data = await EventMeeting.find(query).select('-_id -__v')
 
     const meetings = []
     const events = []
