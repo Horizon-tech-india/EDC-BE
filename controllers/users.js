@@ -47,7 +47,13 @@ module.exports.login = async (req, res, next) => {
     // Output the future time
 
     const token = generateToken(isUserExits, rememberMe)
-    await Signup.findOneAndUpdate({ email }, { token })
+
+    // Update user document with new token if not already present
+    await Signup.findOneAndUpdate(
+      { email: req.body.email },
+      { $addToSet: { token: token } },
+    )
+
     res.status(200).send({
       message: 'User login successfully !',
       data: {
@@ -281,7 +287,10 @@ module.exports.setNewPassword = async (req, res, next) => {
 
 module.exports.logout = async (req, res, next) => {
   try {
-    await Signup.findOneAndUpdate({ email: req.user.email }, { token: null })
+    await Signup.findOneAndUpdate(
+      { email: req.user.email },
+      { $pull: { token: req.token } },
+    )
     res.json({ message: 'Logout successful' })
   } catch (error) {
     console.error(error)

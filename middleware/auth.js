@@ -12,10 +12,11 @@ const auth = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.TOKEN_KEY)
       const user = await Signup.findOne({
         email: decoded.email,
-        token,
+        token: { $in: [token] },
       })
       if (!user) throw new Error('No User Found !')
       req.user = user
+      req.token = token
       next()
     } catch (error) {
       if (error.message === 'jwt expired')

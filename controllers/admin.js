@@ -297,28 +297,27 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
 
     const { email } = req.user
     const { date } = req.query
-    let data = []
+    const query = { createdByEmail: email }
+    let data = [],
+      startDate,
+      endDate
 
+    // If a date is provided, set the start and end dates
     if (date) {
       // Validate the date format
       if (!validateDateFormat(date, dateFormatRegex)) {
         throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
       }
-      // Set the start and end dates for the selected date
-      const startDate = new Date(date)
-      const endDate = new Date(date)
+      startDate = new Date(date)
+      endDate = new Date(date)
       endDate.setDate(endDate.getDate() + 1) // Add one day to the end date
-
-      // Retrieve the logged-in user's events and meetings based on the date
-      data = await EventMeeting.find({
-        createdByEmail: email,
-        dateAndTime: { $gte: startDate, $lt: endDate },
-      }).select('-_id -__v -createdByName -createdByEmail')
-    } else {
-      data = await EventMeeting.find({
-        createdByEmail: email,
-      }).select('-_id -__v -createdByName -createdByEmail')
+      query.dateAndTime = { $gte: startDate, $lt: endDate }
     }
+
+    // Retrieve the logged-in user's events and meetings based on the query
+    data = await EventMeeting.find(query).select(
+      '-_id -__v -createdByName -createdByEmail',
+    )
 
     const meetings = []
     const events = []
