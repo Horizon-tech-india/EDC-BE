@@ -51,7 +51,7 @@ module.exports.login = async (req, res, next) => {
     // Update user document with new token if not already present
     await Signup.findOneAndUpdate(
       { email: req.body.email },
-      { $addToSet: { token: token } },
+      { $addToSet: { token } },
     )
 
     res.status(200).send({

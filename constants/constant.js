@@ -53,4 +53,11 @@ exports.ACTIVITY = {
   MEETING: 'meeting',
   EVENT: 'event',
 }
+exports.LOCATION = {
+  PA: 'Parul University',
+  VSS: 'Vadodara Startup Studio',
+  AHSS: 'Ahmedabad Startup Studio',
+  RSS: 'Rajkot Startup Studio',
+  SSS: 'Surat Startup Studio',
+}
 //  you can also make another obj if you req other then msg okay just an exmaple

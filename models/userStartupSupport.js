@@ -1,14 +1,14 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose')
 
-const { STATUS } = require('../constants/constant')
+const { STATUS, LOCATION } = require('../constants/constant')
 
 const StartupSupportSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true },
     contact: { type: String, required: true },
-    location: { type: String, required: true },
+    location: { type: String, required: true, enum: LOCATION },
     institute: { type: String },
     otherInstitute: { type: String },
     aadhar: { type: String },
