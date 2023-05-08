@@ -3,6 +3,7 @@ require('dotenv').config()
 const http = require('http')
 const mongoose = require('mongoose')
 const app = require('./app')
+const { signupUsers } = require('./services/generateRandomEntries')
 
 const port = process.env.PORT
 
@@ -22,6 +23,7 @@ async function startServer() {
           console.log(
             `Connected to local - Database for http server to port ${port}`,
           )
+          // signupUsers()
         })
       })
       .catch((err) => {
