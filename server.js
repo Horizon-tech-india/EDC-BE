@@ -6,6 +6,7 @@ const app = require('./app')
 const {
   signupUsers,
   eventAndMeetings,
+  usersStartup,
 } = require('./services/generateRandomEntries')
 
 const port = process.env.PORT
@@ -28,6 +29,7 @@ async function startServer() {
           )
           // signupUsers()
           // eventAndMeetings()
+          // usersStartup()
         })
       })
       .catch((err) => {

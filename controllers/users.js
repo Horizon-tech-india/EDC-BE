@@ -339,9 +339,9 @@ module.exports.userStartupSupport = async (req, res, next) => {
       throw new ErrorClass('Please enter your registered email !', 400)
     }
     const startupId =
-      location.substring(0, 2) +
-      category.substring(0, 2) +
-      title.substring(0, 2) +
+      location.substring(0, 2).toUpparCase() +
+      category.substring(0, 2).toUpparCase() +
+      title.substring(0, 2).toUpparCase() +
       generateRandomOTP()
     const branch = BRANCHES[location]
     const startupData = new StartupSupport({
