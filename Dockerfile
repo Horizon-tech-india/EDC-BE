@@ -1,14 +1,20 @@
-# Build stage
-FROM node:14-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm i
-COPY . .
-RUN npm run build
+# Specify the base image to use
+FROM node:18-alpine
 
-# Serve stage
-FROM nginx:1.21-alpine
-#COPY nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /app/build /usr/share/nginx/html
-#EXPOSE 80
-ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the package.json and package-lock.json files to the container
+COPY package*.json ./
+
+# Install the dependencies
+RUN npm install
+
+# Copy the rest of the application code to the container
+COPY . .
+
+# Expose the port that the application will listen on
+EXPOSE 3000
+
+# Start the application
+CMD [ "npm", "start" ]
