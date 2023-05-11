@@ -3,7 +3,7 @@
 Thumbs.db
 
 #.env
-.env
+#.env
 
 # IDE - VSCode
 .vscode
