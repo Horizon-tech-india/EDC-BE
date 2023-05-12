@@ -23,8 +23,8 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use('/api/users', usersRouter)
-app.use('/api/admin', adminRouter)
+app.use('/users', usersRouter)
+app.use('/admin', adminRouter)
 
 // Define a route handler
 app.get('/', (req, res) => {
