@@ -341,3 +341,36 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
     next(err)
   }
 }
+
+module.exports.deleteStartup = async (req, res, next) => {
+  try {
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
+      throw new ErrorClass(ADMIN.ADMIN_ACCESS, 403)
+    }
+
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+    const { startupId } = req.query
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const isStartupExits = await StartupSupport.findOneAndDelete({
+      startupId,
+      location: { $in: req.user.branch },
+    })
+
+    if (!isStartupExits) {
+      throw new ErrorClass(
+        'No startup present under you with startup id which you have provided',
+        400,
+      )
+    }
+
+    res.status(200).send({
+      message: 'Startup has been deleted successfully !',
+    })
+  } catch (err) {
+    next(err)
+  }
+}

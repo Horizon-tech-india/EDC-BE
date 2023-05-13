@@ -25,6 +25,7 @@ exports.MESSAGES = {
 
   ADMIN: {
     MASTER_ACCESS: 'Only master admin has access !',
+    ADMIN_ACCESS: 'Only master admin and admin has access !',
   },
 
   //    pass key value pair here as an obj

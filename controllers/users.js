@@ -332,16 +332,10 @@ module.exports.userStartupSupport = async (req, res, next) => {
       throw new ErrorClass('You have already applied for it !', 400)
     }
 
-    const isUserExits = await Signup.findOne({
-      email,
-    })
-    if (!isUserExits) {
-      throw new ErrorClass('Please enter your registered email !', 400)
-    }
     const startupId =
-      location.substring(0, 2).toUpparCase() +
-      category.substring(0, 2).toUpparCase() +
-      title.substring(0, 2).toUpparCase() +
+      location.substring(0, 2).toUpperCase() +
+      category.substring(0, 2).toUpperCase() +
+      title.substring(0, 2).toUpperCase() +
       generateRandomOTP()
     const branch = BRANCHES[location]
     const startupData = new StartupSupport({
