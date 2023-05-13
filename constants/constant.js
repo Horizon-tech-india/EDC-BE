@@ -4,32 +4,62 @@ exports.MESSAGES = {
     INVALID_USER: 'User does not exits with this email,Go for signup',
     INVALID_PASSWORD: 'Please enter the correct credentials',
     USER_EXITS: 'Already user exits with this email',
-    PASSWORD_LENGTH:
-      'Password lenght must be greater then 8 and email should be in proper format',
+    PASSWORD_VALIDATION:
+      'Password must be greater than 8 chars with upper,lower,number & special chars; email should be in proper format.',
     INCORRECT_OTP: 'Incorrect OTP please enter again !',
     PASSWORD_MISSMATCH:
       'New Password and Confirm New Password does not match !',
     INTERNAL_SERVER_ERROR: 'Internal Server Error',
     INVALID_DATE_FORMAT: 'Invalid date format',
+    INVALID_CREDENTIAL: 'Please enter the correct credentials',
+    NO_RESULT_FOUND: 'No result found !',
+    INCORRECT_STARTUP_ID: 'Please enter the correct startupId',
+    EMPTY_DESCRIPTION: 'Description should not be empty',
+    EMPTY_LINK: 'Link should not be empty',
+    NO_STARTUP_FOUND: 'No startup found !',
+    NO_EVENT_MEETING_FOUND: 'No Event or Meeting found !',
+    STARTUP_NOT_FOUND:
+      'No startup present under you with startup id which you have provided',
+  },
+
+  INFO: {
+    EMAIL_VERIFICATION: 'Please verify your email by entering otp',
+    OTP_VERIFICATION: 'Check your mail to verify OTP',
+    ALREADY_APPLIED: 'You have already applied for it !',
+    REGISTER_EMAIL: 'Please enter your registered email !',
   },
 
   SUCCESS: {
-    MESSAGE: 'User login successfully',
+    USER_LOGGEDIN: 'User logged in successfully!',
     OTP_MESSAGE: 'Check your mail to verify OTP',
-    SET_NEW_PASSWORD: 'Your OTP is verified, Please set new password  !',
-    EMAIL_VERIFIED: 'Your email has been verified, Please login  !',
+    SET_NEW_PASSWORD: 'Your OTP is verified, Please set new password !',
+    LOGIN_MSG: 'Your email has been verified, Please login !',
+    EMAIL_VERIFIED: 'Your email has been verified, Please login !',
     OTP_RESEND: 'OTP Resended on your mail !',
     SET_PASSWORD: 'Your password has been changed, please login !',
     LOGOUT_SUCCESSFUL: 'Logout successful',
+    APPLICATION_SUBMIT: 'Your application has been submitted successfully !',
+    FILE_UPLOADED: 'File uploaded successfully !',
+    DATA_FETCHED: 'Data fetched successfully',
+    UPDATED_STARTUP: 'Startup has been updated successfully !',
+    MEETING_SCHEDULED: 'Meeting scheduled successfully !',
+    EVENT_SCHEDULED: 'Event scheduled successfully !',
+    EVENT_MEETING_FETCHED:
+      'All the events and meeting are fetched successfully ',
+    STARTUP_DELETED: 'Startup has been deleted successfully !',
   },
 
   ADMIN: {
     MASTER_ACCESS: 'Only master admin has access !',
-    ADMIN_ACCESS: 'Only master admin and admin has access !',
+    SELECTED_ACCESS: 'Only master admin and admin has access !',
+    CREATED: 'Admin created successfully',
+    DELETED: 'Admin deleted successfully',
+    NOT_EXIST: 'No admin present with email which you have provided',
+    ALL_FETCHED_SUCCESS: 'fetched all the admin successfully !',
+    NO_ADMIN_FOUND: 'No admin found !',
   },
-
-  //    pass key value pair here as an obj
 }
+
 exports.BRANCHES = {
   // this naming convention I follwed to save lines of code
   'Parul University': 'PA',
@@ -44,6 +74,7 @@ exports.STATUS = Object.freeze({
   VERIFIED: 'verified',
   REJECTED: 'rejected',
 })
+
 exports.ROLE = {
   ADMIN: 'admin',
   MASTER_ADMIN: 'master admin',
@@ -54,6 +85,7 @@ exports.ACTIVITY = {
   MEETING: 'meeting',
   EVENT: 'event',
 }
+
 exports.LOCATION = {
   PA: 'Parul University',
   VSS: 'Vadodara Startup Studio',
@@ -61,4 +93,3 @@ exports.LOCATION = {
   RSS: 'Rajkot Startup Studio',
   SSS: 'Surat Startup Studio',
 }
-//  you can also make another obj if you req other then msg okay just an exmaple

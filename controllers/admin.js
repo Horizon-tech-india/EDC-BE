@@ -10,7 +10,7 @@ const { ROLE, ACTIVITY } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
 const { passwordRegex, dateFormatRegex } = require('../constants/regex')
 const {
-  MESSAGES: { ADMIN, ERROR },
+  MESSAGES: { ADMIN, ERROR, SUCCESS },
 } = require('../constants/constant')
 const { STATUS } = require('../constants/constant')
 
@@ -42,9 +42,7 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
     }
 
     res.status(200).send({
-      message: data.length
-        ? 'Fetched the data successfully'
-        : 'No results found !',
+      message: data.length ? SUCCESS.DATA_FETCHED : ERROR.NO_RESULT_FOUND,
       count: data.length,
       data,
     })
@@ -67,18 +65,15 @@ module.exports.updateStartupDetails = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const { startupId, status } = req.body
-    // await StartupSupport.findOne({ startupId })
     const result = await StartupSupport.findOneAndUpdate(
       { startupId },
       { status },
     )
     if (!result) {
-      throw new ErrorClass('Please enter the correct statuId', 400)
+      throw new ErrorClass(ERROR.INCORRECT_STARTUP_ID, 400)
     }
 
-    res.status(200).send({
-      message: 'Startup has been updated successfully !',
-    })
+    res.status(200).send({ message: SUCCESS.UPDATED_STARTUP })
   } catch (err) {
     next(err)
   }
@@ -106,13 +101,10 @@ module.exports.createAdmin = async (req, res, next) => {
     })
 
     if (isUserExits) {
-      throw new ErrorClass('Already user exits with this email', 400)
+      throw new ErrorClass(ERROR.USER_EXITS, 400)
     }
     if (!passwordRegex.test(password)) {
-      throw new ErrorClass(
-        'Password length must be greater then 8 should contain uppar,lower,number and special letter  and email should be in proper format',
-        400,
-      )
+      throw new ErrorClass(ERROR.PASSWORD_VALIDATION, 400)
     }
     const userData = {
       ...req.body,
@@ -125,9 +117,7 @@ module.exports.createAdmin = async (req, res, next) => {
     const insertData = new Signup(userData)
     await insertData.save()
 
-    res.status(200).send({
-      message: 'Admin has created successfully !',
-    })
+    res.status(200).send({ message: ADMIN.CREATED })
   } catch (err) {
     next(err)
   }
@@ -151,15 +141,10 @@ module.exports.deleteAdmin = async (req, res, next) => {
     })
 
     if (!isUserExits) {
-      throw new ErrorClass(
-        'No admin present with email which you have provided',
-        400,
-      )
+      throw new ErrorClass(ADMIN.NOT_EXIST, 404)
     }
 
-    res.status(200).send({
-      message: 'Admin has deleted successfully !',
-    })
+    res.status(200).send({ message: ADMIN.DELETED })
   } catch (err) {
     next(err)
   }
@@ -177,8 +162,8 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
     res.status(200).send({
       message: allAdminData.length
-        ? 'fetched all the admin successfully !'
-        : 'No admin found !',
+        ? ADMIN.ALL_FETCHED_SUCCESS
+        : ADMIN.NO_ADMIN_FOUND,
       count: allAdminData.length ? allAdminData.length : 0,
       data: allAdminData,
     })
@@ -205,10 +190,10 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     if (type === ACTIVITY.EVENT && !description?.length) {
-      throw new ErrorClass('Description should not be empty', 400)
+      throw new ErrorClass(ERROR.EMPTY_DESCRIPTION, 400)
     }
     if (type === ACTIVITY.MEETING && !link?.length) {
-      throw new ErrorClass('Link should not be empty', 400)
+      throw new ErrorClass(ERROR.EMPTY_LINK, 400)
     }
     const data = new EventMeeting({
       title,
@@ -232,8 +217,8 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
     res.status(200).send({
       message:
         type === ACTIVITY.MEETING
-          ? 'Meeting scheduled successfully !'
-          : 'Event scheduled successfully !',
+          ? SUCCESS.MEETING_SCHEDULED
+          : SUCCESS.EVENT_SCHEDULED,
     })
   } catch (err) {
     next(err)
@@ -273,7 +258,7 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
     res.status(200).send({
       message: totalCount
         ? `fetched last ${days} days startups successfully !`
-        : 'No startup found !',
+        : ERROR.NO_STARTUP_FOUND,
       data: {
         approvedCount,
         pendingCount,
@@ -330,8 +315,8 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
     }
     res.status(200).send({
       message: data.length
-        ? 'All the events and meeting are fetched successfully '
-        : 'No Event or Meeting found !',
+        ? SUCCESS.EVENT_MEETING_FETCHED
+        : ERROR.NO_EVENT_MEETING_FOUND,
       meetingCount: meetings.length ? meetings.length : 0,
       eventCount: events.length ? events.length : 0,
       meetings,
@@ -345,7 +330,7 @@ module.exports.getAllMeetingAndEvent = async (req, res, next) => {
 module.exports.deleteStartup = async (req, res, next) => {
   try {
     if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
-      throw new ErrorClass(ADMIN.ADMIN_ACCESS, 403)
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
     }
 
     const isInvalidRequest = validateRequest(req.query, {
@@ -361,15 +346,10 @@ module.exports.deleteStartup = async (req, res, next) => {
     })
 
     if (!isStartupExits) {
-      throw new ErrorClass(
-        'No startup present under you with startup id which you have provided',
-        400,
-      )
+      throw new ErrorClass(ERROR.STARTUP_NOT_FOUND, 400)
     }
 
-    res.status(200).send({
-      message: 'Startup has been deleted successfully !',
-    })
+    res.status(200).send({ message: SUCCESS.STARTUP_DELETED })
   } catch (err) {
     next(err)
   }
