@@ -9,8 +9,10 @@ const { sendEmail, mailOTPTemp } = require('../services/mail')
 const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
 const { passwordRegex } = require('../constants/regex')
 const {
-  MESSAGES: { ERROR },
+  MESSAGES: { ERROR, INFO, SUCCESS },
 } = require('../constants/constant')
+
+const SubjectEmail = 'Horizon Tech signup verification code'
 
 module.exports.login = async (req, res, next) => {
   try {
@@ -28,14 +30,14 @@ module.exports.login = async (req, res, next) => {
       email,
     })
     if (!isUserExits) {
-      throw new ErrorClass('User does not exits with this email', 400)
+      throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
     if (!isUserExits.otpVerified) {
-      throw new ErrorClass('Please verify your email by entering otp', 400)
+      throw new ErrorClass(INFO.EMAIL_VERIFICATION, 403)
     }
     const passwordMatch = await bcrypt.compare(password, isUserExits.password)
     if (!passwordMatch) {
-      throw new ErrorClass('Please enter the correct credentials', 400)
+      throw new ErrorClass(ERROR.INVALID_CREDENTIAL, 400)
     }
     const now = new Date()
 
@@ -55,7 +57,7 @@ module.exports.login = async (req, res, next) => {
     )
 
     res.status(200).send({
-      message: 'User login successfully !',
+      message: SUCCESS.USER_LOGGEDIN,
       data: {
         email,
         token,
@@ -90,20 +92,17 @@ module.exports.signup = async (req, res, next) => {
       email,
     })
     if (isUserExits && isUserExits.otpVerified) {
-      throw new ErrorClass('Already user exits with this email', 400)
+      throw new ErrorClass(ERROR.USER_EXITS, 409)
     }
     if (!passwordRegex.test(password) || !validator.isEmail(email)) {
-      throw new ErrorClass(
-        'Password length must be greater then 8 should contain uppar,lower,number and special letter  and email should be in proper format',
-        400,
-      )
+      throw new ErrorClass(ERROR.PASSWORD_VALIDATION, 400)
     }
 
     const mailOtp = generateRandomOTP()
     const htmlTemp = mailOTPTemp(mailOtp)
     const mailOptions = {
       to: email,
-      subject: 'Horizon Tech signup verification code',
+      subject: SubjectEmail,
       html: htmlTemp,
     }
     await sendEmail(mailOptions)
@@ -124,7 +123,7 @@ module.exports.signup = async (req, res, next) => {
       await insertData.save()
     }
 
-    res.send({ message: 'Check your mail to verify OTP', email, status: 200 })
+    res.send({ message: INFO.OTP_VERIFICATION, email, status: 202 })
   } catch (err) {
     next(err)
   }
@@ -147,10 +146,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
       email,
     })
     if (!isUserExits) {
-      throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
-        400,
-      )
+      throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
     if (isUserExits.mailOTP === req.body.otp) {
       if (isForgotPassword) {
@@ -162,10 +158,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
             },
           },
         )
-        res.send({
-          message: 'Your OTP is verified, Please set new password  !',
-          status: 200,
-        })
+        res.send({ message: SUCCESS.SET_NEW_PASSWORD, status: 200 })
       } else {
         await Signup.updateOne(
           { email },
@@ -175,13 +168,10 @@ module.exports.verifyMailOtp = async (req, res, next) => {
             },
           },
         )
-        res.send({
-          message: 'Your email has been verified, Please login  !',
-          status: 200,
-        })
+        res.send({ message: SUCCESS.LOGIN_MSG, status: 200 })
       }
     } else {
-      throw new ErrorClass('Incorrect OTP please enter again !', 400)
+      throw new ErrorClass(ERROR.INCORRECT_OTP, 401)
     }
   } catch (e) {
     next(e)
@@ -203,17 +193,14 @@ module.exports.resendMailOTP = async (req, res, next) => {
       email,
     })
     if (!isUserExits) {
-      throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
-        400,
-      )
+      throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
 
     const mailOtp = generateRandomOTP()
     const htmlTemp = mailOTPTemp(mailOtp)
     const mailOptions = {
       to: email,
-      subject: 'Horizon Tech signup verification code',
+      subject: SubjectEmail,
       html: htmlTemp,
     }
     await sendEmail(mailOptions)
@@ -232,7 +219,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
     }
     await Signup.updateOne({ email }, updateSignupColl)
     res.send({
-      message: 'OTP Resended on your mail !',
+      message: SUCCESS.OTP_RESEND,
       status: 200,
     })
   } catch (e) {
@@ -252,19 +239,13 @@ module.exports.setNewPassword = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     if (newPassword !== confirmNewPassword) {
-      throw new ErrorClass(
-        'New Password and Confirm New Password does not match !',
-        400,
-      )
+      throw new ErrorClass(ERROR.PASSWORD_MISSMATCH, 400)
     }
     const isUserExits = await Signup.findOne({
       email,
     })
     if (!isUserExits) {
-      throw new ErrorClass(
-        'User does not exits with this email, Go for signup',
-        400,
-      )
+      throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
     const salt = await bcrypt.genSaltSync(10)
     const setNewPassword = bcrypt.hashSync(req.body.newPassword, salt)
@@ -276,10 +257,7 @@ module.exports.setNewPassword = async (req, res, next) => {
         },
       },
     )
-    res.send({
-      message: 'Your password has been changed, please login !',
-      status: 200,
-    })
+    res.send({ message: SUCCESS.SET_PASSWORD, status: 200 })
   } catch (e) {
     next(e)
   }
@@ -291,10 +269,10 @@ module.exports.logout = async (req, res, next) => {
       { email: req.user.email },
       { $pull: { token: req.token } },
     )
-    res.json({ message: 'Logout successful' })
+    res.json({ message: SUCCESS.LOGOUT_SUCCESSFUL })
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Internal Server Error' })
+    res.status(500).json({ error: ERROR.INTERNAL_SERVER_ERROR })
   }
 }
 module.exports.userStartupSupport = async (req, res, next) => {
@@ -329,7 +307,14 @@ module.exports.userStartupSupport = async (req, res, next) => {
       email,
     })
     if (isAlreadyApplied) {
-      throw new ErrorClass('You have already applied for it !', 400)
+      throw new ErrorClass(INFO.ALREADY_APPLIED, 400)
+    }
+
+    const isUserExits = await Signup.findOne({
+      email,
+    })
+    if (!isUserExits) {
+      throw new ErrorClass(INFO.REGISTER_EMAIL, 404)
     }
 
     const startupId =
@@ -345,10 +330,7 @@ module.exports.userStartupSupport = async (req, res, next) => {
       status: STATUS.PENDING,
     })
     await startupData.save()
-    res.send({
-      message: 'Your application has been submitted successfully !',
-      status: 200,
-    })
+    res.send({ message: SUCCESS.APPLICATION_SUBMIT, status: 200 })
   } catch (error) {
     next(error)
   }
@@ -381,7 +363,7 @@ module.exports.fileUpload = async (req, res, next) => {
       },
     )
 
-    res.status(200).json({ message: 'File uploaded successfully' })
+    res.status(200).json({ message: SUCCESS.FILE_UPLOADED })
   } catch (err) {
     console.error(err)
     next(err)
