@@ -2,24 +2,38 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [main ]
+    branches: [cicd]
   pull_request:
-    branches: [ main  ]
+    branches: [cicd]
 
 jobs:
-
-  build-docker-image:
-
+  build-deploy-docker-image:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      uses: mr-smithers-excellent/docker-build-push@v6
-      with:
-        image: shivamsinghgslab/edc-backend
-        registry: docker.io
-        dockerfile: Dockerfile
-        tags: latest
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v2
+
+      - name: Build the Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: shivamsinghgslab/edc-backend-test
+          registry: docker.io
+          dockerfile: Dockerfile
+          tags: latest
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Deploy to EC2
+        run: |
+          echo "$EC2_PRIVATE_KEY" > key.pem
+          chmod 600 key.pem
+          ssh -i key.pem ubuntu@35.154.124.251 << 'EOF'
+            docker pull shivamsinghgslab/edc-backend-test:latest
+
+            
+            docker stop edc-backend-test || true
+            docker rm edc-backend-test || true
+
+            
+            docker run -d --name edc-backend-test -p 80:80 shivamsinghgslab/edc-backend-test:latest
+          EOF
