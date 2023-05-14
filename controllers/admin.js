@@ -359,7 +359,7 @@ module.exports.deleteStartup = async (req, res, next) => {
 module.exports.getEventMeetingDates = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.query, {
-      yearAndMonth: false,
+      yearAndMonth: true,
     })
 
     if (isInvalidRequest) {
@@ -370,34 +370,32 @@ module.exports.getEventMeetingDates = async (req, res, next) => {
     const { yearAndMonth } = req.query
     const query = role === ROLE.MASTER_ADMIN ? {} : { createdByEmail: email }
 
-    if (yearAndMonth) {
-      // Validate the yearMonth format 'yyyy-mm'
-      if (!validateDateFormat(yearAndMonth, yearMonthRegex)) {
-        throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
-      }
-
-      // Construct the start and end dates for the given month and year
-      const startDate = new Date(`${yearAndMonth}-01T00:00:00.000Z`)
-      const endDate = new Date(`${yearAndMonth}-31T23:59:59.999Z`)
-      query.dateAndTime = { $gte: startDate, $lte: endDate }
-
-      // Query the database for documents that match the given query
-      const data = await EventMeeting.find(query)
-      const eventDates = [],
-        meetingDates = []
-
-      if (data.length) {
-        data.forEach((meetingOrEvent) => {
-          const date = new Date(meetingOrEvent.dateAndTime).getUTCDate()
-          if (meetingOrEvent.type === ACTIVITY.MEETING) {
-            meetingDates.push(date)
-          } else {
-            eventDates.push(date)
-          }
-        })
-      }
-      res.status(200).send({ meetingDates, eventDates })
+    // Validate the yearMonth format 'yyyy-mm'
+    if (!validateDateFormat(yearAndMonth, yearMonthRegex)) {
+      throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
     }
+
+    // Construct the start and end dates for the given month and year
+    const startDate = new Date(`${yearAndMonth}-01T00:00:00.000Z`)
+    const endDate = new Date(`${yearAndMonth}-31T23:59:59.999Z`)
+    query.dateAndTime = { $gte: startDate, $lte: endDate }
+
+    // Query the database for documents that match the given query
+    const data = await EventMeeting.find(query)
+    const eventDates = [],
+      meetingDates = []
+
+    if (data.length) {
+      data.forEach((meetingOrEvent) => {
+        const date = new Date(meetingOrEvent.dateAndTime).getUTCDate()
+        if (meetingOrEvent.type === ACTIVITY.MEETING) {
+          meetingDates.push(date)
+        } else {
+          eventDates.push(date)
+        }
+      })
+    }
+    res.status(200).send({ meetingDates, eventDates })
   } catch (err) {
     next(err)
   }
