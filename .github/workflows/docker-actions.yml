@@ -32,8 +32,9 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-            ls
-            pwd 
-            hostname 
-            hostname -i 
+            docker pull shivamsinghgslab/edc-backend-test:latest
+            docker stop edc-backend-test || true
+            docker rm edc-backend-test || true
+            docker run -d --name edc-backend-test -p 3000:3000 shivamsinghgslab/edc-backend-test:latest	 
+            
           '
