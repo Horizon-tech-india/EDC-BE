@@ -34,4 +34,10 @@ adminRouter.get(
 )
 adminRouter.delete('/delete-startup', auth, adminController.deleteStartup)
 
+adminRouter.get(
+  '/event-meeting-dates',
+  auth,
+  adminController.getEventMeetingDates,
+)
+
 module.exports = adminRouter
