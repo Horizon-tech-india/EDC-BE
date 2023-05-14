@@ -25,9 +25,9 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          echo "$EC2_PRIVATE_KEY" > key.pem
-          chmod 600 key.pem
-          ssh -i key.pem ubuntu@35.154.124.251 << 'EOF'
+          sudo echo "$EC2_PRIVATE_KEY" > key.pem
+          sudo chmod 600 key.pem
+          sudo ssh -i key.pem ubuntu@35.154.124.251 << 'EOF'
             docker pull shivamsinghgslab/edc-backend-test:latest
 
             
