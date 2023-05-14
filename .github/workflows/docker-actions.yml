@@ -42,6 +42,7 @@ jobs:
             docker stop edc-backend-test || true
             docker rmi -f $(docker images -a -q) || true
             # docker rm edc-backend-test || true
+            echo ${{ env.VERSION }} 
             docker run -d --name edc-backend-test -p 3000:3000 shivamsinghgslab/edc-backend-test:${{ env.VERSION }} 
             
           '
