@@ -52,7 +52,7 @@ module.exports.login = async (req, res, next) => {
 
     // Update user document with new token if not already present
     await Signup.findOneAndUpdate(
-      { email: req.body.email },
+      { email: req.body?.email },
       { $addToSet: { token } },
     )
 
@@ -61,10 +61,10 @@ module.exports.login = async (req, res, next) => {
       data: {
         email,
         token,
-        firstName: isUserExits.firstName,
-        lastName: isUserExits.lastName,
-        phoneNumber: isUserExits.phoneNumber,
-        role: isUserExits.role,
+        firstName: isUserExits?.firstName,
+        lastName: isUserExits?.lastName,
+        phoneNumber: isUserExits?.phoneNumber,
+        role: isUserExits?.role,
         tokenExpTime,
         branch: isUserExits?.branch,
       },
@@ -91,7 +91,7 @@ module.exports.signup = async (req, res, next) => {
     const isUserExits = await Signup.findOne({
       email,
     })
-    if (isUserExits && isUserExits.otpVerified) {
+    if (isUserExits && isUserExits?.otpVerified) {
       throw new ErrorClass(ERROR.USER_EXITS, 409)
     }
     if (!passwordRegex.test(password) || !validator.isEmail(email)) {
@@ -148,7 +148,7 @@ module.exports.verifyMailOtp = async (req, res, next) => {
     if (!isUserExits) {
       throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
-    if (isUserExits.mailOTP === req.body.otp) {
+    if (isUserExits.mailOTP === req.body?.otp) {
       if (isForgotPassword) {
         await Signup.updateOne(
           { email },
@@ -248,7 +248,7 @@ module.exports.setNewPassword = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_USER, 404)
     }
     const salt = await bcrypt.genSaltSync(10)
-    const setNewPassword = bcrypt.hashSync(req.body.newPassword, salt)
+    const setNewPassword = bcrypt.hashSync(req.body?.newPassword, salt)
     await Signup.updateOne(
       { email },
       {
@@ -266,8 +266,8 @@ module.exports.setNewPassword = async (req, res, next) => {
 module.exports.logout = async (req, res, next) => {
   try {
     await Signup.findOneAndUpdate(
-      { email: req.user.email },
-      { $pull: { token: req.token } },
+      { email: req.user?.email },
+      { $pull: { token: req?.token } },
     )
     res.json({ message: SUCCESS.LOGOUT_SUCCESSFUL })
   } catch (error) {
@@ -310,13 +310,6 @@ module.exports.userStartupSupport = async (req, res, next) => {
       throw new ErrorClass(INFO.ALREADY_APPLIED, 400)
     }
 
-    const isUserExits = await Signup.findOne({
-      email,
-    })
-    if (!isUserExits) {
-      throw new ErrorClass(INFO.REGISTER_EMAIL, 404)
-    }
-
     const startupId =
       location.substring(0, 2).toUpperCase() +
       category.substring(0, 2).toUpperCase() +
@@ -338,7 +331,7 @@ module.exports.userStartupSupport = async (req, res, next) => {
 
 module.exports.fileUpload = async (req, res, next) => {
   try {
-    const isInvalidRequest = validateRequest(req.file, {
+    const isInvalidRequest = validateRequest(req?.file, {
       fieldname: false,
       originalname: true,
       encoding: false,
@@ -351,14 +344,14 @@ module.exports.fileUpload = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
 
-    const fileBuffer = Buffer.from(req.file.buffer, 'base64')
+    const fileBuffer = Buffer.from(req?.file?.buffer, 'base64')
 
     await StartupSupport.updateOne(
-      { email: req.user.email },
+      { email: req.user?.email },
       {
         $set: {
           file: fileBuffer,
-          fileName: req.file.originalname,
+          fileName: req?.file?.originalname,
         },
       },
     )
@@ -380,7 +373,7 @@ module.exports.downloadFile = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const fileData = await StartupSupport.findOne({
-      startupId: req.query.startupId,
+      startupId: req.query?.startupId,
     }).select('file fileName')
 
     res.set({

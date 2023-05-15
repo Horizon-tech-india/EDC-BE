@@ -27,7 +27,7 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
-    const filters = req.user.branch
+    const filters = req.user?.branch
     const { title } = req.query
     const regex = new RegExp(title, 'i')
     const mongoFilters = {
@@ -110,6 +110,7 @@ module.exports.createAdmin = async (req, res, next) => {
     if (!passwordRegex.test(password)) {
       throw new ErrorClass(ERROR.PASSWORD_VALIDATION, 400)
     }
+
     const userData = {
       ...req.body,
       otpVerified: true,
@@ -206,13 +207,13 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       dateAndTime,
       type,
       description,
-      createdByEmail: req.user.email,
-      createdByName: req.user.firstName,
+      createdByEmail: req.user?.email,
+      createdByName: req.user?.firstName,
     })
     if (type !== ACTIVITY.MEETING && filters && filters.length) {
       const result = await StartupSupport.find({ $or: filters })
 
-      const eventMembers = result.map((startup) => startup.email)
+      const eventMembers = result.map((startup) => startup?.email)
 
       data.members = eventMembers
       data.filters = filters
@@ -238,7 +239,7 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
-    const days = req?.query?.days || 30
+    const days = req.query?.days || 30
 
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - days)
@@ -343,7 +344,7 @@ module.exports.deleteStartup = async (req, res, next) => {
     }
     const isStartupExits = await StartupSupport.findOneAndDelete({
       startupId,
-      location: { $in: req.user.branch },
+      location: { $in: req.user?.branch },
     })
 
     if (!isStartupExits) {
@@ -404,7 +405,7 @@ module.exports.getEventMeetingDates = async (req, res, next) => {
 module.exports.getUsersEmail = async (req, res, next) => {
   try {
     const { branch } = req.user
-    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user?.role)) {
       throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
     }
 
@@ -417,7 +418,7 @@ module.exports.getUsersEmail = async (req, res, next) => {
         ? 'Emails fetched successfully !'
         : 'No Emails found !',
       count: data.length ? data.length : 0,
-      data: data.map((obj) => obj.email),
+      data: data.map((obj) => obj?.email),
     })
   } catch (err) {
     next(err)
