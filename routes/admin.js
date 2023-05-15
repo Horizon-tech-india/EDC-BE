@@ -39,5 +39,5 @@ adminRouter.get(
   auth,
   adminController.getEventMeetingDates,
 )
-
+adminRouter.get('/get-startups-user-email', auth, adminController.getUsersEmail)
 module.exports = adminRouter

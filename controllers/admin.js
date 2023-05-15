@@ -400,3 +400,26 @@ module.exports.getEventMeetingDates = async (req, res, next) => {
     next(err)
   }
 }
+
+module.exports.getUsersEmail = async (req, res, next) => {
+  try {
+    const { branch } = req.user
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+
+    const data = await StartupSupport.find({
+      location: { $in: branch },
+    }).select('email -_id')
+
+    res.status(200).send({
+      message: data.length
+        ? 'Emails fetched successfully !'
+        : 'No Emails found !',
+      count: data.length ? data.length : 0,
+      data: data.map((obj) => obj.email),
+    })
+  } catch (err) {
+    next(err)
+  }
+}
