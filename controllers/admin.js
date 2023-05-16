@@ -27,6 +27,12 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
+    if (!req.user?.branch?.length) {
+      throw new ErrorClass(
+        'Please contact adminstration as user does not contain any branch !',
+        400,
+      )
+    }
     const filters = req.user?.branch
     const { title } = req.query
     const regex = new RegExp(title, 'i')
@@ -342,6 +348,13 @@ module.exports.deleteStartup = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
+
+    if (!req.user?.branch?.length) {
+      throw new ErrorClass(
+        'Please contact adminstration as user does not contain any branch !',
+        400,
+      )
+    }
     const isStartupExits = await StartupSupport.findOneAndDelete({
       startupId,
       location: { $in: req.user?.branch },
@@ -407,6 +420,12 @@ module.exports.getUsersEmail = async (req, res, next) => {
     const { branch } = req.user
     if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user?.role)) {
       throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    if (!branch?.length) {
+      throw new ErrorClass(
+        'Please contact adminstration as user does not contain any branch !',
+        400,
+      )
     }
 
     const data = await StartupSupport.find({

@@ -19,5 +19,11 @@ userRouter.post(
   userController.fileUpload,
 )
 userRouter.get('/download-file', auth, userController.downloadFile)
+userRouter.get('/startup-status', auth, userController.startupStatus)
+userRouter.get(
+  '/user-meetings-events',
+  auth,
+  userController.getUserMeetingAndEvent,
+)
 
 module.exports = userRouter

@@ -6,11 +6,12 @@ const { validateRequest } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
 const { generateRandomOTP, generateToken } = require('../services/common.utils')
 const { sendEmail, mailOTPTemp } = require('../services/mail')
-const { BRANCHES, STATUS, ROLE } = require('../constants/constant')
+const { BRANCHES, STATUS, ROLE, ACTIVITY } = require('../constants/constant')
 const { passwordRegex } = require('../constants/regex')
 const {
   MESSAGES: { ERROR, INFO, SUCCESS },
 } = require('../constants/constant')
+const EventMeeting = require('../models/eventMeeting')
 
 const SubjectEmail = 'Horizon Tech signup verification code'
 
@@ -381,6 +382,59 @@ module.exports.downloadFile = async (req, res, next) => {
       'Content-Type': 'application/octet-stream',
     })
     res.send(fileData.file)
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+}
+
+module.exports.startupStatus = async (req, res, next) => {
+  try {
+    const status = await StartupSupport.findOne({
+      email: req?.user?.email,
+    }).select('status')
+    if (!status) {
+      throw new ErrorClass(
+        'Startup does not created with your registered mail',
+        400,
+      )
+    }
+    res.send({
+      message: 'Status fetched successfully !',
+      startupStatus: status?.status || 'N/A',
+      status: 200,
+    })
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+}
+
+module.exports.getUserMeetingAndEvent = async (req, res, next) => {
+  try {
+    const data = await EventMeeting.find({
+      members: { $in: req?.user?.email },
+    }).select('-_id -__v')
+    const meetings = []
+    const events = []
+    if (data.length) {
+      data.forEach((meetingOrEvent) => {
+        if (meetingOrEvent.type === ACTIVITY.MEETING) {
+          meetings.push(meetingOrEvent)
+        } else {
+          events.push(meetingOrEvent)
+        }
+      })
+    }
+    res.status(200).send({
+      message: data.length
+        ? SUCCESS.EVENT_MEETING_FETCHED
+        : ERROR.NO_EVENT_MEETING_FOUND,
+      meetingCount: meetings.length ? meetings.length : 0,
+      eventCount: events.length ? events.length : 0,
+      meetings,
+      events,
+    })
   } catch (err) {
     console.error(err)
     next(err)
