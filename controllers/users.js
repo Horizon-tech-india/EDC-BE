@@ -394,13 +394,10 @@ module.exports.startupStatus = async (req, res, next) => {
       email: req?.user?.email,
     }).select('status')
     if (!status) {
-      throw new ErrorClass(
-        'Startup does not created with your registered mail',
-        400,
-      )
+      throw new ErrorClass(ERROR.NO_STARTUP_WITH_EMAIL, 400)
     }
     res.send({
-      message: 'Status fetched successfully !',
+      message: SUCCESS.STATUS_FETCHED,
       startupStatus: status?.status || 'N/A',
       status: 200,
     })

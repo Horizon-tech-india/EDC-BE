@@ -20,6 +20,7 @@ exports.MESSAGES = {
     NO_EVENT_MEETING_FOUND: 'No Event or Meeting found !',
     STARTUP_NOT_FOUND:
       'No startup present under you with startup id which you have provided',
+    NO_STARTUP_WITH_EMAIL: 'Startup does not created with your registered mail',
   },
 
   INFO: {
@@ -47,6 +48,7 @@ exports.MESSAGES = {
     EVENT_MEETING_FETCHED:
       'All the events and meeting are fetched successfully ',
     STARTUP_DELETED: 'Startup has been deleted successfully !',
+    STATUS_FETCHED: 'Status fetched successfully !',
   },
 
   ADMIN: {
