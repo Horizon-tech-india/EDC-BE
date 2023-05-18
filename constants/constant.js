@@ -49,6 +49,7 @@ exports.MESSAGES = {
       'All the events and meeting are fetched successfully ',
     STARTUP_DELETED: 'Startup has been deleted successfully !',
     STATUS_FETCHED: 'Status fetched successfully !',
+    FINANCE_UPDATED_STARTUP: 'Amount added successfully in given startup !',
   },
 
   ADMIN: {
@@ -59,6 +60,9 @@ exports.MESSAGES = {
     NOT_EXIST: 'No admin present with email which you have provided',
     ALL_FETCHED_SUCCESS: 'fetched all the admin successfully !',
     NO_ADMIN_FOUND: 'No admin found !',
+    WITHOUT_BRANCH:
+      'Please contact adminstration as user does not contain any branch !',
+    STARTUP_NOT_UNDER_ADMIN: 'Startup does not exits under this admin !',
   },
 }
 

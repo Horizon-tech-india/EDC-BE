@@ -411,7 +411,7 @@ module.exports.getUserMeetingAndEvent = async (req, res, next) => {
   try {
     const data = await EventMeeting.find({
       members: { $in: req?.user?.email },
-    }).select('-_id -__v')
+    }).select('-_id -__v -createdAt -updatedAt')
     const meetings = []
     const events = []
     if (data.length) {

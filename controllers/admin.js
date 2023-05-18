@@ -28,10 +28,7 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     if (!req.user?.branch?.length) {
-      throw new ErrorClass(
-        'Please contact adminstration as user does not contain any branch !',
-        400,
-      )
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
     }
     const filters = req.user?.branch
     const { title } = req.query
@@ -63,8 +60,8 @@ module.exports.getAllStartupDetails = async (req, res, next) => {
 
 module.exports.updateStartupDetails = async (req, res, next) => {
   try {
-    if (req.user.role !== ROLE.MASTER_ADMIN) {
-      throw new ErrorClass(ADMIN.MASTER_ACCESS, 403)
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
     }
     const isInvalidRequest = validateRequest(req.body, {
       startupId: true,
@@ -75,6 +72,11 @@ module.exports.updateStartupDetails = async (req, res, next) => {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
     const { startupId, status } = req.body
+
+    const startup = await StartupSupport.findOne({ startupId })
+    if (!req?.user?.branch.includes(startup?.location)) {
+      throw new ErrorClass(ADMIN.STARTUP_NOT_UNDER_ADMIN, 400)
+    }
     const result = await StartupSupport.findOneAndUpdate(
       { startupId },
       { status },
@@ -350,10 +352,7 @@ module.exports.deleteStartup = async (req, res, next) => {
     }
 
     if (!req.user?.branch?.length) {
-      throw new ErrorClass(
-        'Please contact adminstration as user does not contain any branch !',
-        400,
-      )
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
     }
     const isStartupExits = await StartupSupport.findOneAndDelete({
       startupId,
@@ -422,10 +421,7 @@ module.exports.getUsersEmail = async (req, res, next) => {
       throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
     }
     if (!branch?.length) {
-      throw new ErrorClass(
-        'Please contact adminstration as user does not contain any branch !',
-        400,
-      )
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
     }
 
     const data = await StartupSupport.find({
@@ -439,6 +435,39 @@ module.exports.getUsersEmail = async (req, res, next) => {
       count: data.length ? data.length : 0,
       data: data.map((obj) => obj?.email),
     })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.updateFinanceStartupDetails = async (req, res, next) => {
+  try {
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(req.user.role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    const isInvalidRequest = validateRequest(req.body, {
+      startupId: true,
+      amount: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const { startupId, amount } = req.body
+    const startup = await StartupSupport.findOne({ startupId })
+    if (!req?.user?.branch.includes(startup?.location)) {
+      throw new ErrorClass(ADMIN.STARTUP_NOT_UNDER_ADMIN, 400)
+    }
+
+    const result = await StartupSupport.findOneAndUpdate(
+      { startupId },
+      { $addToSet: { finance: { amount, date: new Date() } } },
+    )
+    if (!result) {
+      throw new ErrorClass(ERROR.INCORRECT_STARTUP_ID, 400)
+    }
+
+    res.status(200).send({ message: SUCCESS.FINANCE_UPDATED_STARTUP })
   } catch (err) {
     next(err)
   }

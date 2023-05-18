@@ -26,6 +26,7 @@ const StartupSupportSchema = new mongoose.Schema(
     startupId: { type: String, require: true },
     status: { type: String, require: true, enum: Object.values(STATUS) },
     branch: { type: String, require: true },
+    finance: [{ amount: String, date: Date }],
     fileName: { type: String },
     file: { type: Buffer },
     fileContentType: String,

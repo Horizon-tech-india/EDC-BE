@@ -40,4 +40,10 @@ adminRouter.get(
   adminController.getEventMeetingDates,
 )
 adminRouter.get('/get-startups-user-email', auth, adminController.getUsersEmail)
+adminRouter.patch(
+  '/finance-startup-details',
+  auth,
+  adminController.updateFinanceStartupDetails,
+)
+
 module.exports = adminRouter
