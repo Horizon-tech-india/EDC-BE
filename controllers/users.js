@@ -12,6 +12,7 @@ const {
   MESSAGES: { ERROR, INFO, SUCCESS },
 } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
+const Notification = require('../models/notification')
 
 const SubjectEmail = 'Horizon Tech signup verification code'
 
@@ -324,6 +325,17 @@ module.exports.userStartupSupport = async (req, res, next) => {
       status: STATUS.PENDING,
     })
     await startupData.save()
+
+    await Notification.findOneAndUpdate(
+      {},
+      {
+        $push: {
+          userStartupSupports: [{ startup: startupData._id }],
+        },
+      },
+         { new: true, upsert: true },
+    )
+
     res.send({ message: SUCCESS.APPLICATION_SUBMIT, status: 200 })
   } catch (error) {
     next(error)
