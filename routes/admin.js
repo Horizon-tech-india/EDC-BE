@@ -46,4 +46,6 @@ adminRouter.patch(
   adminController.updateFinanceStartupDetails,
 )
 
+adminRouter.get('/notifications', auth, adminController.sendNotification)
+
 module.exports = adminRouter

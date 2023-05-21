@@ -17,6 +17,7 @@ const {
   MESSAGES: { ADMIN, ERROR, SUCCESS },
 } = require('../constants/constant')
 const { STATUS } = require('../constants/constant')
+const Notification = require('../models/notification')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -227,6 +228,17 @@ module.exports.scheduleEventOrMeeting = async (req, res, next) => {
       data.filters = filters
     }
     await data.save()
+
+    await Notification.findOneAndUpdate(
+      {},
+      {
+        $push: {
+          eventAndMeetings: [{ eventMeeting: data._id }],
+        },
+      },
+      { new: true, upsert: true },
+    )
+
     res.status(200).send({
       message:
         type === ACTIVITY.MEETING
@@ -468,6 +480,72 @@ module.exports.updateFinanceStartupDetails = async (req, res, next) => {
     }
 
     res.status(200).send({ message: SUCCESS.FINANCE_UPDATED_STARTUP })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.sendNotification = async (req, res, next) => {
+  try {
+    const { branch, email, role } = req?.user
+
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+
+    if (!branch?.length) {
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
+    }
+
+    if (!email) {
+      throw new ErrorClass(ERROR.NO_EMAIL, 400)
+    }
+
+    /**
+     * set data from the populated path & schema model with
+     * query condition and store selected keys
+     */
+    const notifications = await Notification.find()
+      .populate({
+        path: 'userStartupSupports.startup',
+        model: StartupSupport,
+        match: { location: { $in: branch } },
+        select: '-_id name startupId createdAt title location',
+      })
+      .populate({
+        path: 'eventAndMeetings.eventMeeting',
+        model: EventMeeting,
+        match: { members: { $in: [email] } },
+        select: '-_id createdByName title type dateAndTime createdAt',
+      })
+
+    // Separate eventMeeting & userStartup data from populated notifications
+    const emData = notifications?.[0].eventAndMeetings.map(
+      (em) =>
+        em.eventMeeting && {
+          id: em._id,
+          viewed: em.viewed,
+          ...em.eventMeeting._doc,
+        },
+    )
+    const stData = notifications?.[0].userStartupSupports.map(
+      (st) =>
+        st.startup && { id: st._id, viewed: st.viewed, ...st.startup._doc },
+    )
+
+    //merge eventMeeting and startup notification data
+    const data = [...emData, ...stData]
+    const notificationCount = data.filter((dt) => dt?.viewed === false).length // filter count for not viewed notification
+    const notificationsData = data
+      .filter((d) => d !== null) // filter null values
+      .sort((a, b) => b.createdAt - a.createdAt) // sort notification on createdAt
+      .sort((a, b) => a.viewed - b.viewed) // sort notification on not viewed
+
+    res.status(200).send({
+      message: SUCCESS.NOTIFICATION,
+      notificationCount,
+      notifications: notificationsData,
+    })
   } catch (err) {
     next(err)
   }
