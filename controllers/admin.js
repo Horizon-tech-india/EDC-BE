@@ -6,7 +6,11 @@ const {
   validateDateFormat,
 } = require('../services/common.utils')
 const ErrorClass = require('../services/error')
-const { ROLE, ACTIVITY } = require('../constants/constant')
+const {
+  ROLE,
+  ACTIVITY,
+  CLEAR_NOTIFICATION_TYPES,
+} = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
 const {
   passwordRegex,
@@ -495,7 +499,7 @@ module.exports.updateFinanceStartupDetails = async (req, res, next) => {
 
 module.exports.sendNotification = async (req, res, next) => {
   try {
-    const { branch, email, role } = req?.user
+    const { branch, email, role } = req.user
 
     if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
       throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
@@ -541,7 +545,7 @@ module.exports.sendNotification = async (req, res, next) => {
         st.startup && { id: st._id, viewed: st.viewed, ...st.startup._doc },
     )
 
-    //merge eventMeeting and startup notification data
+    // merge eventMeeting and startup notification data
     const data = [...emData, ...stData]
     const notificationCount = data.filter((dt) => dt?.viewed === false).length // filter count for not viewed notification
     const notificationsData = data
@@ -553,6 +557,63 @@ module.exports.sendNotification = async (req, res, next) => {
       message: SUCCESS.NOTIFICATION,
       notificationCount,
       notifications: notificationsData,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.clearNotification = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.query, {
+      id: false,
+      type: true,
+    })
+
+    const { branch, email, role } = req.user
+    const { id, type } = req.query
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+
+    if (!branch?.length) {
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
+    }
+
+    if (!email) {
+      throw new ErrorClass(ERROR.NO_EMAIL, 400)
+    }
+
+    if (type !== CLEAR_NOTIFICATION_TYPES.ALL) {
+      let query = {
+        eventAndMeetings: {
+          $elemMatch: { eventMeeting: { $in: id } },
+        },
+      }
+      let updateQuery = { $set: { 'eventAndMeetings.$.viewed': false } }
+      if (type === CLEAR_NOTIFICATION_TYPES.STARTUP) {
+        query = {
+          userStartupSupports: {
+            $elemMatch: { startup: { $in: id } },
+          },
+        }
+        updateQuery = { $set: { 'userStartupSupports.$.viewed': false } }
+      }
+      await Notification.findOneAndUpdate(query, updateQuery)
+    } else {
+      await Notification.updateMany(
+        {},
+        {
+          $set: {
+            'eventAndMeetings.$[].viewed': false,
+            'userStartupSupports.$[].viewed': false,
+          },
+        },
+      )
+    }
+
+    res.status(200).send({
+      message: SUCCESS.NOTIFICATION_CLEARED,
     })
   } catch (err) {
     next(err)

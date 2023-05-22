@@ -47,5 +47,6 @@ adminRouter.patch(
 )
 
 adminRouter.get('/notifications', auth, adminController.sendNotification)
+adminRouter.get('/clear-notifications', auth, adminController.clearNotification)
 
 module.exports = adminRouter
