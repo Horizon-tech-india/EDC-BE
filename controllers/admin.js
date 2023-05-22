@@ -259,13 +259,21 @@ module.exports.getLastMonthStartups = async (req, res, next) => {
     if (isInvalidRequest) {
       throw new ErrorClass(ERROR.INVALID_REQ, 400)
     }
+
+    if (!req.user?.branch?.length) {
+      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
+    }
+
     const days = req.query?.days || 30
 
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - days)
 
     const data = await StartupSupport.find({
-      createdAt: { $gte: thirtyDaysAgo },
+      $and: [
+        { createdAt: { $gte: thirtyDaysAgo } },
+        { location: { $in: req.user?.branch } },
+      ],
     })
 
     const totalCount = data.length
@@ -510,13 +518,13 @@ module.exports.sendNotification = async (req, res, next) => {
         path: 'userStartupSupports.startup',
         model: StartupSupport,
         match: { location: { $in: branch } },
-        select: '-_id name startupId createdAt title location',
+        select: '-_id',
       })
       .populate({
         path: 'eventAndMeetings.eventMeeting',
         model: EventMeeting,
         match: { members: { $in: [email] } },
-        select: '-_id createdByName title type dateAndTime createdAt',
+        select: '-_id',
       })
 
     // Separate eventMeeting & userStartup data from populated notifications
