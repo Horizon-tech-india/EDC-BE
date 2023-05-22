@@ -51,6 +51,7 @@ exports.MESSAGES = {
     STARTUP_DELETED: 'Startup has been deleted successfully !',
     STATUS_FETCHED: 'Status fetched successfully !',
     FINANCE_UPDATED_STARTUP: 'Amount added successfully in given startup !',
+    NOTIFICATION_CLEARED: 'Notification cleared',
     NOTIFICATION: 'Notification fetched Successfully!',
   },
 
@@ -100,4 +101,9 @@ exports.LOCATION = {
   AHSS: 'Ahmedabad Startup Studio',
   RSS: 'Rajkot Startup Studio',
   SSS: 'Surat Startup Studio',
+}
+exports.CLEAR_NOTIFICATION_TYPES = {
+  ALL: 'all',
+  EVENT_AND_MEETING: 'eventAndMeeting',
+  STARTUP: 'startup',
 }

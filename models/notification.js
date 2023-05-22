@@ -4,7 +4,7 @@ const NotificationSchema = mongoose.Schema({
   userStartupSupports: [
     {
       startup: {
-        type: mongoose.Schema.Types.ObjectId, //populate StartupSupport collection
+        type: mongoose.Schema.Types.ObjectId, // populate StartupSupport collection
         ref: 'StartupSupport',
       },
       viewed: { type: Boolean, default: false },
@@ -13,7 +13,7 @@ const NotificationSchema = mongoose.Schema({
   eventAndMeetings: [
     {
       eventMeeting: {
-        type: mongoose.Schema.Types.ObjectId, //populate EventMeeting collection
+        type: mongoose.Schema.Types.ObjectId, // populate EventMeeting collection
         ref: 'EventMeeting',
       },
       viewed: { type: Boolean, default: false },
