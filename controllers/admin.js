@@ -547,16 +547,14 @@ module.exports.sendNotification = async (req, res, next) => {
 
     // merge eventMeeting and startup notification data
     const data = [...emData, ...stData]
-    const notificationCount = data.filter((dt) => dt?.viewed === false).length // filter count for not viewed notification
     const notificationsData = data
-      .filter((d) => d !== null) // filter null values
+      .filter((dt) => dt !== null && dt?.viewed === false) // filter null values & not viewed notification
       .sort((a, b) => b.createdAt - a.createdAt) // sort notification on createdAt
-      .sort((a, b) => a.viewed - b.viewed) // sort notification on not viewed
 
     res.status(200).send({
       message: SUCCESS.NOTIFICATION,
-      notificationCount,
-      notifications: notificationsData,
+      notificationCount: notificationsData?.length || 0,
+      notifications: notificationsData || [],
     })
   } catch (err) {
     next(err)
@@ -566,9 +564,13 @@ module.exports.sendNotification = async (req, res, next) => {
 module.exports.clearNotification = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.query, {
-      id: false,
+      id: true,
       type: true,
     })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
 
     const { branch, email, role } = req.user
     const { id, type } = req.query
