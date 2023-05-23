@@ -590,14 +590,14 @@ module.exports.clearNotification = async (req, res, next) => {
           $elemMatch: { eventMeeting: { $in: id } },
         },
       }
-      let updateQuery = { $set: { 'eventAndMeetings.$.viewed': false } }
+      let updateQuery = { $set: { 'eventAndMeetings.$.viewed': true } }
       if (type === CLEAR_NOTIFICATION_TYPES.STARTUP) {
         query = {
           userStartupSupports: {
             $elemMatch: { startup: { $in: id } },
           },
         }
-        updateQuery = { $set: { 'userStartupSupports.$.viewed': false } }
+        updateQuery = { $set: { 'userStartupSupports.$.viewed': true } }
       }
       await Notification.findOneAndUpdate(query, updateQuery)
     } else {
@@ -605,8 +605,8 @@ module.exports.clearNotification = async (req, res, next) => {
         {},
         {
           $set: {
-            'eventAndMeetings.$[].viewed': false,
-            'userStartupSupports.$[].viewed': false,
+            'eventAndMeetings.$[].viewed': true,
+            'userStartupSupports.$[].viewed': true,
           },
         },
       )
