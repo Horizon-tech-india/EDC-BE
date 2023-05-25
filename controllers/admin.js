@@ -589,14 +589,14 @@ module.exports.clearNotification = async (req, res, next) => {
     if (type !== CLEAR_NOTIFICATION_TYPES.ALL) {
       let query = {
         eventAndMeetings: {
-          $elemMatch: { eventMeeting: { $in: id } },
+          $elemMatch: { _id: { $in: id } },
         },
       }
       let updateQuery = { $set: { 'eventAndMeetings.$.viewed': true } }
       if (type === CLEAR_NOTIFICATION_TYPES.STARTUP) {
         query = {
           userStartupSupports: {
-            $elemMatch: { startup: { $in: id } },
+            $elemMatch: { _id: { $in: id } },
           },
         }
         updateQuery = { $set: { 'userStartupSupports.$.viewed': true } }
