@@ -22,6 +22,7 @@ const {
 } = require('../constants/constant')
 const { STATUS } = require('../constants/constant')
 const Notification = require('../models/notification')
+const SecStageStartupSupport = require('../models/SecStageStartupSupport')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -617,5 +618,89 @@ module.exports.clearNotification = async (req, res, next) => {
     })
   } catch (err) {
     next(err)
+  }
+}
+
+module.exports.secStageStarupSupport = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.body, {
+      startupId: true,
+      incubationId: true,
+      title: true,
+      problemDescription: true,
+      solutionDescription: true,
+      uniquenessDescription: true,
+      startupSector: true,
+      innovationType: true,
+      currentStage: true,
+      startupProgram: true,
+      startupStatus: true,
+      startupGrade: true,
+      programStartDate: true,
+      yuktiInnovationId: true,
+      yuktiPortalUserId: true,
+      yuktiPortalPassword: true,
+      teamLeaderName: true,
+      teamLeaderEmail: true,
+      teamLeaderContact: true,
+      teamLeaderCategory: true,
+      teamLeaderId: true,
+      organisationName: true,
+      teamMembers: true,
+      teamMemberCategory: true,
+      spoc: true,
+      externalMentor: true,
+      incubationDate: true,
+      graduationDate: true,
+      receivedFunding: true,
+      fundingAgency: true,
+      fundSanctionDate: true,
+      fundingAmount: true,
+      registeredCompany: true,
+      companyType: true,
+      cinUdhyamRegistrationNo: true,
+      companyRegistrationDate: true,
+      dpiitRecognised: true,
+      dpiitCertificateNo: true,
+      incubatedAt: true,
+      ipFilledGranted: true,
+      ipTypes: true,
+      ipDetails: true,
+      revenueGeneration: true,
+      numOfEmployees: true,
+      folderLink: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const { role, firstName, email, branch } = req.user
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    const isExitsInStartupData = await StartupSupport.findOne({
+      startupId: req.body.startupId,
+      location: { $in: branch },
+    })
+    if (!isExitsInStartupData) {
+      throw new ErrorClass(ADMIN.SEC_STAGE_ID_NOT_EXITS, 400)
+    }
+    const isAlreadyExits = await SecStageStartupSupport.findOne({
+      startupId: req.body.startupId,
+    })
+    if (isAlreadyExits) {
+      throw new ErrorClass(ADMIN.EXITS_SEC_STAGE_DET, 400)
+    }
+
+    const secStageData = new SecStageStartupSupport({
+      ...req.body,
+      createdByName: firstName,
+      createdByEmail: email,
+    })
+    await secStageData.save()
+
+    res.send({ message: ADMIN.ADDED_SEC_STAGE_DET, status: 200 })
+  } catch (error) {
+    next(error)
   }
 }

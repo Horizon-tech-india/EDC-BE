@@ -49,4 +49,10 @@ adminRouter.patch(
 adminRouter.get('/notifications', auth, adminController.sendNotification)
 adminRouter.get('/clear-notifications', auth, adminController.clearNotification)
 
+adminRouter.post(
+  '/sec-stage-startup-support',
+  auth,
+  adminController.secStageStarupSupport,
+)
+
 module.exports = adminRouter

@@ -66,6 +66,10 @@ exports.MESSAGES = {
     WITHOUT_BRANCH:
       'Please contact adminstration as user does not contain any branch !',
     STARTUP_NOT_UNDER_ADMIN: 'Startup does not exits under this admin !',
+    EXITS_SEC_STAGE_DET:
+      'Already exits second stage details with this startupId !',
+    ADDED_SEC_STAGE_DET: 'Second Stage data is added successfully !',
+    SEC_STAGE_ID_NOT_EXITS: 'Startup is not exits with this startupId !',
   },
 }
 
