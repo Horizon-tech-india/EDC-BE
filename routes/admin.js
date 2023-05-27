@@ -52,7 +52,13 @@ adminRouter.get('/clear-notifications', auth, adminController.clearNotification)
 adminRouter.post(
   '/sec-stage-startup-support',
   auth,
-  adminController.secStageStarupSupport,
+  adminController.addSecStageStarupSupport,
 )
-
+adminRouter.get(
+  '/sec-stage-startup-support',
+  auth,
+  adminController.getSecStageStarupSupport,
+)
+adminRouter.post('/finance-details', auth, adminController.addFinanceDetail)
+adminRouter.get('/finance-details', auth, adminController.getFinanceDetail)
 module.exports = adminRouter

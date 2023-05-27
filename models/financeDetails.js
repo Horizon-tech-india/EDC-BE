@@ -15,6 +15,6 @@ const financeDetailsSchema = new mongoose.Schema({
   finance: [financeSchema],
 })
 
-const FinanceDetails = mongoose.model('Startup', financeDetailsSchema)
+const FinanceDetails = mongoose.model('finances', financeDetailsSchema)
 
 module.exports = FinanceDetails

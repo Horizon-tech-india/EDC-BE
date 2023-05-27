@@ -23,6 +23,7 @@ const {
 const { STATUS } = require('../constants/constant')
 const Notification = require('../models/notification')
 const SecStageStartupSupport = require('../models/SecStageStartupSupport')
+const FinanceDetails = require('../models/financeDetails')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -621,7 +622,7 @@ module.exports.clearNotification = async (req, res, next) => {
   }
 }
 
-module.exports.secStageStarupSupport = async (req, res, next) => {
+module.exports.addSecStageStarupSupport = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.body, {
       startupId: true,
@@ -702,5 +703,93 @@ module.exports.secStageStarupSupport = async (req, res, next) => {
     res.send({ message: ADMIN.ADDED_SEC_STAGE_DET, status: 200 })
   } catch (error) {
     next(error)
+  }
+}
+
+module.exports.addFinanceDetail = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.body, {
+      startupId: true,
+      finance: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const { role, firstName, email, branch } = req.user
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    const isExitsInStartupData = await StartupSupport.findOne({
+      startupId: req.body.startupId,
+      location: { $in: branch },
+    })
+
+    if (!isExitsInStartupData) {
+      throw new ErrorClass(ADMIN.SARTUP_ID_NOT_EXITS, 400)
+    }
+
+    await FinanceDetails.findOneAndUpdate(
+      { startupId: req.body.startupId },
+      {
+        $push: {
+          finance: [{ ...req.body.finance }],
+        },
+      },
+      { upsert: true, new: true },
+    )
+
+    res.send({ message: ADMIN.FINANCE_ADDED, status: 200 })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports.getFinanceDetail = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+
+    const financeDetails = await FinanceDetails.findOne({
+      startupId: req.query.startupId,
+    }).select('-__v -_id')
+
+    res.send({
+      message: ADMIN.FINANCED_DATA_FETCHED,
+      financeDetails,
+      status: 200,
+    })
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+}
+module.exports.getSecStageStarupSupport = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+
+    const secStageData = await SecStageStartupSupport.findOne({
+      startupId: req.query.startupId,
+    }).select('-__v -_id')
+
+    res.send({
+      message: ADMIN.FINANCED_FETCHED,
+      secStageData,
+      status: 200,
+    })
+  } catch (err) {
+    console.error(err)
+    next(err)
   }
 }

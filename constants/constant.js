@@ -69,7 +69,10 @@ exports.MESSAGES = {
     EXITS_SEC_STAGE_DET:
       'Already exits second stage details with this startupId !',
     ADDED_SEC_STAGE_DET: 'Second Stage data is added successfully !',
-    SEC_STAGE_ID_NOT_EXITS: 'Startup is not exits with this startupId !',
+    SARTUP_ID_NOT_EXITS: 'Startup is not exits with this startupId !',
+    FINANCE_ADDED: 'Finance details added successfully !',
+    FINANCED_DATA_FETCHED: 'Fianace details fetched successfully !',
+    SEC_STAGE_DATA_FETCHED: 'Second Stage details fetched successfully !',
   },
 }
 
