@@ -44,5 +44,5 @@ jobs:
             image_id=$(docker images -a -q)
             echo $image_id
             docker rmi -f $image_id | echo true
-            docker run -d -p 3000:3000 --name edc-backend shivamsinghgslab/edc-backend:latest 
+            docker run -d -p 3000:3000 --name edc-backend devops3238/edc-backend:latest 
           '
