@@ -73,6 +73,7 @@ exports.MESSAGES = {
     FINANCE_ADDED: 'Finance details added successfully !',
     FINANCED_DATA_FETCHED: 'Fianace details fetched successfully !',
     SEC_STAGE_DATA_FETCHED: 'Second Stage details fetched successfully !',
+    NEG_NET_BALANCE: 'Net balance cannot be negative !',
   },
 }
 
@@ -113,4 +114,9 @@ exports.CLEAR_NOTIFICATION_TYPES = {
   ALL: 'all',
   EVENT_AND_MEETING: 'eventAndMeeting',
   STARTUP: 'startup',
+}
+
+exports.FINANCE_TYPE = {
+  CREDIT: 'credit',
+  DEBIT: 'debit',
 }

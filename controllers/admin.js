@@ -10,6 +10,7 @@ const {
   ROLE,
   ACTIVITY,
   CLEAR_NOTIFICATION_TYPES,
+  FINANCE_TYPE,
 } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
 const {
@@ -728,10 +729,35 @@ module.exports.addFinanceDetail = async (req, res, next) => {
     if (!isExitsInStartupData) {
       throw new ErrorClass(ADMIN.SARTUP_ID_NOT_EXITS, 400)
     }
+    const financeDetails = await FinanceDetails.findOne({
+      startupId: req.body.startupId,
+    })
+
+    let updatedNetBalance = financeDetails?.netBalance
+
+    if (financeDetails?.netBalance) {
+      if (req.body?.finance?.type === FINANCE_TYPE.CREDIT) {
+        updatedNetBalance += req.body.finance.amount
+      }
+      if (req.body?.finance?.type === FINANCE_TYPE.DEBIT) {
+        updatedNetBalance -= req.body.finance.amount
+        if (updatedNetBalance < 0) {
+          throw new ErrorClass(ADMIN.NEG_NET_BALANCE, 400)
+        }
+      }
+    } else if (
+      !financeDetails?.netBalance &&
+      req.body?.finance?.type === FINANCE_TYPE.DEBIT
+    ) {
+      throw new ErrorClass(ADMIN.NEG_NET_BALANCE, 400)
+    } else {
+      updatedNetBalance = req.body?.finance?.amount
+    }
 
     await FinanceDetails.findOneAndUpdate(
       { startupId: req.body.startupId },
       {
+        netBalance: updatedNetBalance,
         $push: {
           finance: [{ ...req.body.finance }],
         },
