@@ -21,7 +21,7 @@ jobs:
       - name: Build the Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-          image: shivamsinghgslab/edc-backend
+          image: devops3238/edc-backend
           registry: docker.io
           dockerfile: Dockerfile
           tags: |
