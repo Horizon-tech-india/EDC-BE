@@ -23,7 +23,7 @@ const {
 } = require('../constants/constant')
 const { STATUS } = require('../constants/constant')
 const Notification = require('../models/notification')
-const SecStageStartupSupport = require('../models/SecStageStartupSupport')
+const SecStageStartupSupport = require('../models/secStageStartupSupport')
 const FinanceDetails = require('../models/financeDetails')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
