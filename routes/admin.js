@@ -49,4 +49,16 @@ adminRouter.patch(
 adminRouter.get('/notifications', auth, adminController.sendNotification)
 adminRouter.get('/clear-notifications', auth, adminController.clearNotification)
 
+adminRouter.post(
+  '/sec-stage-startup-support',
+  auth,
+  adminController.addSecStageStarupSupport,
+)
+adminRouter.get(
+  '/sec-stage-startup-support',
+  auth,
+  adminController.getSecStageStarupSupport,
+)
+adminRouter.post('/finance-details', auth, adminController.addFinanceDetail)
+adminRouter.get('/finance-details', auth, adminController.getFinanceDetail)
 module.exports = adminRouter

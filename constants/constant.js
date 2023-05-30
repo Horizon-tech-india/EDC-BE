@@ -66,6 +66,14 @@ exports.MESSAGES = {
     WITHOUT_BRANCH:
       'Please contact adminstration as user does not contain any branch !',
     STARTUP_NOT_UNDER_ADMIN: 'Startup does not exits under this admin !',
+    EXITS_SEC_STAGE_DET:
+      'Already exits second stage details with this startupId !',
+    ADDED_SEC_STAGE_DET: 'Second Stage data is added successfully !',
+    SARTUP_ID_NOT_EXITS: 'Startup is not exits with this startupId !',
+    FINANCE_ADDED: 'Finance details added successfully !',
+    FINANCED_DATA_FETCHED: 'Fianace details fetched successfully !',
+    SEC_STAGE_DATA_FETCHED: 'Second Stage details fetched successfully !',
+    NEG_NET_BALANCE: 'Net balance cannot be negative !',
   },
 }
 
@@ -106,4 +114,9 @@ exports.CLEAR_NOTIFICATION_TYPES = {
   ALL: 'all',
   EVENT_AND_MEETING: 'eventAndMeeting',
   STARTUP: 'startup',
+}
+
+exports.FINANCE_TYPE = {
+  CREDIT: 'credit',
+  DEBIT: 'debit',
 }

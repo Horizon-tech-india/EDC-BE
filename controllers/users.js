@@ -333,7 +333,7 @@ module.exports.userStartupSupport = async (req, res, next) => {
           userStartupSupports: [{ startup: startupData._id }],
         },
       },
-         { new: true, upsert: true },
+      { new: true, upsert: true },
     )
 
     res.send({ message: SUCCESS.APPLICATION_SUBMIT, status: 200 })
@@ -402,15 +402,16 @@ module.exports.downloadFile = async (req, res, next) => {
 
 module.exports.startupStatus = async (req, res, next) => {
   try {
-    const status = await StartupSupport.findOne({
+    const data = await StartupSupport.findOne({
       email: req?.user?.email,
-    }).select('status')
-    if (!status) {
+    }).select('status startupId')
+    if (!data) {
       throw new ErrorClass(ERROR.NO_STARTUP_WITH_EMAIL, 400)
     }
     res.send({
       message: SUCCESS.STATUS_FETCHED,
-      startupStatus: status?.status || 'N/A',
+      startupStatus: data?.status || 'N/A',
+      startupId: data.startupId,
       status: 200,
     })
   } catch (err) {

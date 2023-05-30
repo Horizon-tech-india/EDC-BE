@@ -10,6 +10,7 @@ const {
   ROLE,
   ACTIVITY,
   CLEAR_NOTIFICATION_TYPES,
+  FINANCE_TYPE,
 } = require('../constants/constant')
 const EventMeeting = require('../models/eventMeeting')
 const {
@@ -22,6 +23,8 @@ const {
 } = require('../constants/constant')
 const { STATUS } = require('../constants/constant')
 const Notification = require('../models/notification')
+const SecStageStartupSupport = require('../models/secStageStartupSupport')
+const FinanceDetails = require('../models/financeDetails')
 
 module.exports.getAllStartupDetails = async (req, res, next) => {
   try {
@@ -618,6 +621,203 @@ module.exports.clearNotification = async (req, res, next) => {
       message: SUCCESS.NOTIFICATION_CLEARED,
     })
   } catch (err) {
+    next(err)
+  }
+}
+
+module.exports.addSecStageStarupSupport = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.body, {
+      startupId: true,
+      incubationId: true,
+      title: true,
+      problemDescription: true,
+      solutionDescription: true,
+      uniquenessDescription: true,
+      startupSector: true,
+      innovationType: true,
+      currentStage: true,
+      startupProgram: true,
+      startupStatus: true,
+      startupGrade: true,
+      programStartDate: true,
+      yuktiInnovationId: true,
+      yuktiPortalUserId: true,
+      yuktiPortalPassword: true,
+      teamLeaderName: true,
+      teamLeaderEmail: true,
+      teamLeaderContact: true,
+      teamLeaderCategory: true,
+      teamLeaderId: true,
+      organisationName: true,
+      teamMembers: true,
+      teamMemberCategory: true,
+      spoc: true,
+      externalMentor: true,
+      incubationDate: true,
+      graduationDate: true,
+      receivedFunding: true,
+      fundingAgency: true,
+      fundSanctionDate: true,
+      fundingAmount: true,
+      registeredCompany: true,
+      companyType: true,
+      cinUdhyamRegistrationNo: true,
+      companyRegistrationDate: true,
+      dpiitRecognised: true,
+      dpiitCertificateNo: true,
+      incubatedAt: true,
+      ipFilledGranted: true,
+      ipTypes: true,
+      ipDetails: true,
+      revenueGeneration: true,
+      numOfEmployees: true,
+      folderLink: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const { role, firstName, email, branch } = req.user
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    const isExitsInStartupData = await StartupSupport.findOne({
+      startupId: req.body.startupId,
+      location: { $in: branch },
+    })
+    if (!isExitsInStartupData) {
+      throw new ErrorClass(ADMIN.SEC_STAGE_ID_NOT_EXITS, 400)
+    }
+    const isAlreadyExits = await SecStageStartupSupport.findOne({
+      startupId: req.body.startupId,
+    })
+    if (isAlreadyExits) {
+      throw new ErrorClass(ADMIN.EXITS_SEC_STAGE_DET, 400)
+    }
+
+    const secStageData = new SecStageStartupSupport({
+      ...req.body,
+      createdByName: firstName,
+      createdByEmail: email,
+    })
+    await secStageData.save()
+
+    res.send({ message: ADMIN.ADDED_SEC_STAGE_DET, status: 200 })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports.addFinanceDetail = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.body, {
+      startupId: true,
+      finance: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+    const { role, firstName, email, branch } = req.user
+    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
+      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
+    }
+    const isExitsInStartupData = await StartupSupport.findOne({
+      startupId: req.body.startupId,
+      location: { $in: branch },
+    })
+
+    if (!isExitsInStartupData) {
+      throw new ErrorClass(ADMIN.SARTUP_ID_NOT_EXITS, 400)
+    }
+    const financeDetails = await FinanceDetails.findOne({
+      startupId: req.body.startupId,
+    })
+
+    let updatedNetBalance = financeDetails?.netBalance
+
+    if (financeDetails?.netBalance) {
+      if (req.body?.finance?.type === FINANCE_TYPE.CREDIT) {
+        updatedNetBalance += req.body.finance.amount
+      }
+      if (req.body?.finance?.type === FINANCE_TYPE.DEBIT) {
+        updatedNetBalance -= req.body.finance.amount
+        if (updatedNetBalance < 0) {
+          throw new ErrorClass(ADMIN.NEG_NET_BALANCE, 400)
+        }
+      }
+    } else if (
+      !financeDetails?.netBalance &&
+      req.body?.finance?.type === FINANCE_TYPE.DEBIT
+    ) {
+      throw new ErrorClass(ADMIN.NEG_NET_BALANCE, 400)
+    } else {
+      updatedNetBalance = req.body?.finance?.amount
+    }
+
+    await FinanceDetails.findOneAndUpdate(
+      { startupId: req.body.startupId },
+      {
+        netBalance: updatedNetBalance,
+        $push: {
+          finance: [{ ...req.body.finance }],
+        },
+      },
+      { upsert: true, new: true },
+    )
+
+    res.send({ message: ADMIN.FINANCE_ADDED, status: 200 })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports.getFinanceDetail = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+
+    const financeDetails = await FinanceDetails.findOne({
+      startupId: req.query.startupId,
+    }).select('-__v -_id')
+
+    res.send({
+      message: ADMIN.FINANCED_DATA_FETCHED,
+      financeDetails,
+      status: 200,
+    })
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+}
+module.exports.getSecStageStarupSupport = async (req, res, next) => {
+  try {
+    const isInvalidRequest = validateRequest(req.query, {
+      startupId: true,
+    })
+
+    if (isInvalidRequest) {
+      throw new ErrorClass(ERROR.INVALID_REQ, 400)
+    }
+
+    const secStageData = await SecStageStartupSupport.findOne({
+      startupId: req.query.startupId,
+    }).select('-__v -_id')
+
+    res.send({
+      message: ADMIN.FINANCED_FETCHED,
+      secStageData,
+      status: 200,
+    })
+  } catch (err) {
+    console.error(err)
     next(err)
   }
 }
