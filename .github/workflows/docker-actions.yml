@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: featch version
-        id: v1 
+        id: v1
         run: |
-         git_hash=$(git rev-parse --short "$GITHUB_SHA")
-         versions=${GITHUB_REF##*/}-$git_hash
+          git_hash=$(git rev-parse --short "$GITHUB_SHA")
+          versions=${GITHUB_REF##*/}-$git_hash
 
       - name: Build the Docker image
         uses: mr-smithers-excellent/docker-build-push@v6
@@ -32,10 +32,10 @@ jobs:
 
       - name: Deploy in EC2
         env:
-            PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY  }}
-            HOSTNAME : ${{ secrets.HOSTNAME  }}
-            USER_NAME : ${{ secrets.USER_NAME  }}
-            
+          PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY  }}
+          HOSTNAME: ${{ secrets.HOSTNAME  }}
+          USER_NAME: ${{ secrets.USER_NAME  }}
+
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
