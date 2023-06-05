@@ -404,7 +404,7 @@ module.exports.startupStatus = async (req, res, next) => {
   try {
     const data = await StartupSupport.findOne({
       email: req?.user?.email,
-    }).select('status startupId')
+    }).select('status startupId fileName')
     if (!data) {
       throw new ErrorClass(ERROR.NO_STARTUP_WITH_EMAIL, 400)
     }
@@ -412,6 +412,7 @@ module.exports.startupStatus = async (req, res, next) => {
       message: SUCCESS.STATUS_FETCHED,
       startupStatus: data?.status || 'N/A',
       startupId: data.startupId,
+      fileName: data.fileName,
       status: 200,
     })
   } catch (err) {
