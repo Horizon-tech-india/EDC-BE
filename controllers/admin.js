@@ -421,21 +421,16 @@ module.exports.getEventMeetingDates = async (req, res, next) => {
     query.dateAndTime = { $gte: startDate, $lte: endDate }
 
     // Query the database for documents that match the given query
-    const data = await EventMeeting.find(query)
-    const eventDates = [],
-      meetingDates = []
+    const data = await EventMeeting.find(query).select('-_id -__v')
 
-    if (data.length) {
-      data.forEach((meetingOrEvent) => {
-        const date = new Date(meetingOrEvent.dateAndTime).getUTCDate()
-        if (meetingOrEvent.type === ACTIVITY.MEETING) {
-          meetingDates.push(date)
-        } else {
-          eventDates.push(date)
-        }
-      })
-    }
-    res.status(200).send({ meetingDates, eventDates })
+    const eventMeetingData = data.map((meetingOrEvent) => {
+      return {
+        ...meetingOrEvent.toObject(),
+        start: meetingOrEvent.dateAndTime,
+        dateAndTime: undefined,
+      }
+    })
+    res.status(200).send({ eventMeetingData })
   } catch (err) {
     next(err)
   }
