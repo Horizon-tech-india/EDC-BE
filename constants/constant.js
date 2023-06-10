@@ -22,6 +22,7 @@ exports.MESSAGES = {
       'No startup present under you with startup id which you have provided',
     NO_STARTUP_WITH_EMAIL: 'Startup does not created with your registered mail',
     NO_EMAIL: 'No Email Found!',
+    FILE_NOT_EXITS: 'File does not exits with this startup !',
   },
 
   INFO: {

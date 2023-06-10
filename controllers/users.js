@@ -388,12 +388,15 @@ module.exports.downloadFile = async (req, res, next) => {
     const fileData = await StartupSupport.findOne({
       startupId: req.query?.startupId,
     }).select('file fileName')
-
-    res.set({
-      'Content-Disposition': `attachment; filename=${fileData.fileName}`,
-      'Content-Type': 'application/octet-stream',
-    })
-    res.send(fileData.file)
+    if (fileData) {
+      res.set({
+        'Content-Disposition': `attachment; filename=${fileData.fileName}`,
+        'Content-Type': 'application/octet-stream',
+      })
+      res.send(fileData.file)
+    } else {
+      res.status(200).json({ message: ERROR.FILE_NOT_EXITS })
+    }
   } catch (err) {
     console.error(err)
     next(err)
