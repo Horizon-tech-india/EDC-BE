@@ -562,7 +562,7 @@ module.exports.sendNotification = async (req, res, next) => {
 module.exports.clearNotification = async (req, res, next) => {
   try {
     const isInvalidRequest = validateRequest(req.query, {
-      id: true,
+      id: false,
       type: true,
     })
 
