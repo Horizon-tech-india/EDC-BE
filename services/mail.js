@@ -3,12 +3,6 @@ const ErrorClass = require('./error')
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.MAIL_ACCOUNT_USER,
-    pass: process.env.MAIL_ACCOUNT_PASSWORD,
-  },
 })
 
 async function sendEmail({ to, subject, html }) {

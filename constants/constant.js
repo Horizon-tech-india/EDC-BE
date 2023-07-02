@@ -89,7 +89,7 @@ exports.BRANCHES = {
 
 exports.STATUS = Object.freeze({
   PENDING: 'pending',
-  VERIFIED: 'verified',
+  VERIFIED: 'verrified',
   REJECTED: 'rejected',
 })
 
@@ -107,9 +107,9 @@ exports.ACTIVITY = {
 exports.LOCATION = {
   PA: 'Parul University',
   VSS: 'Vadodara Startup Studio',
-  AHSS: 'Ahmedabad Startup Studio',
+  AHSS: 'Ahmedaba Startup Studio',
   RSS: 'Rajkot Startup Studio',
-  SSS: 'Surat Startup Studio',
+  SSS: 'Surat Startu Studio',
 }
 exports.CLEAR_NOTIFICATION_TYPES = {
   ALL: 'all',

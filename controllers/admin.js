@@ -131,12 +131,7 @@ module.exports.createAdmin = async (req, res, next) => {
       ...req.body,
       otpVerified: true,
       isForgotPassword: false,
-      role: ROLE.ADMIN,
     }
-    const salt = await bcrypt.genSaltSync(10)
-    userData.password = bcrypt.hashSync(password, salt)
-    const insertData = new Signup(userData)
-    await insertData.save()
 
     res.status(200).send({ message: ADMIN.CREATED })
   } catch (err) {
@@ -195,63 +190,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 module.exports.scheduleEventOrMeeting = async (req, res, next) => {
   try {
-    const isInvalidRequest = validateRequest(req.body, {
-      title: true,
-      members: false,
-      filters: false,
-      type: true,
-      link: false,
-      dateAndTime: true,
-      description: false,
-    })
-    const { title, members, type, link, dateAndTime, filters, description } =
-      req.body
-
-    if (isInvalidRequest) {
-      throw new ErrorClass(ERROR.INVALID_REQ, 400)
-    }
-    if (type === ACTIVITY.EVENT && !description?.length) {
-      throw new ErrorClass(ERROR.EMPTY_DESCRIPTION, 400)
-    }
-    if (type === ACTIVITY.MEETING && !link?.length) {
-      throw new ErrorClass(ERROR.EMPTY_LINK, 400)
-    }
-    const data = new EventMeeting({
-      title,
-      members,
-      link,
-      dateAndTime,
-      type,
-      description,
-      createdByEmail: req.user?.email,
-      createdByName: req.user?.firstName,
-    })
-    if (type !== ACTIVITY.MEETING && filters && filters.length) {
-      const result = await StartupSupport.find({ $or: filters })
-
-      const eventMembers = result.map((startup) => startup?.email)
-
-      data.members = eventMembers
-      data.filters = filters
-    }
-    await data.save()
-
-    await Notification.findOneAndUpdate(
-      {},
-      {
-        $push: {
-          eventAndMeetings: [{ eventMeeting: data._id }],
-        },
-      },
-      { new: true, upsert: true },
-    )
-
-    res.status(200).send({
-      message:
-        type === ACTIVITY.MEETING
-          ? SUCCESS.MEETING_SCHEDULED
-          : SUCCESS.EVENT_SCHEDULED,
-    })
+    console.log('198')
   } catch (err) {
     next(err)
   }
@@ -398,39 +337,7 @@ module.exports.deleteStartup = async (req, res, next) => {
 
 module.exports.getEventMeetingDates = async (req, res, next) => {
   try {
-    const isInvalidRequest = validateRequest(req.query, {
-      yearAndMonth: true,
-    })
-
-    if (isInvalidRequest) {
-      throw new ErrorClass(ERROR.INVALID_REQ, 400)
-    }
-
-    const { email, role } = req.user
-    const { yearAndMonth } = req.query
-    const query = role === ROLE.MASTER_ADMIN ? {} : { createdByEmail: email }
-
-    // Validate the yearMonth format 'yyyy-mm'
-    if (!validateDateFormat(yearAndMonth, yearMonthRegex)) {
-      throw new ErrorClass(ERROR.INVALID_DATE_FORMAT, 400)
-    }
-
-    // Construct the start and end dates for the given month and year
-    const startDate = new Date(`${yearAndMonth}-01T00:00:00.000Z`)
-    const endDate = new Date(`${yearAndMonth}-31T23:59:59.999Z`)
-    query.dateAndTime = { $gte: startDate, $lte: endDate }
-
-    // Query the database for documents that match the given query
-    const data = await EventMeeting.find(query).select('-_id -__v')
-
-    const eventMeetingData = data.map((meetingOrEvent) => {
-      return {
-        ...meetingOrEvent.toObject(),
-        start: meetingOrEvent.dateAndTime,
-        dateAndTime: undefined,
-      }
-    })
-    res.status(200).send({ eventMeetingData })
+    res.status(200).send({ message: 'good res' })
   } catch (err) {
     next(err)
   }
@@ -497,63 +404,7 @@ module.exports.updateFinanceStartupDetails = async (req, res, next) => {
 
 module.exports.sendNotification = async (req, res, next) => {
   try {
-    const { branch, email, role } = req.user
-
-    if (![ROLE.MASTER_ADMIN, ROLE.ADMIN].includes(role)) {
-      throw new ErrorClass(ADMIN.SELECTED_ACCESS, 403)
-    }
-
-    if (!branch?.length) {
-      throw new ErrorClass(ADMIN.WITHOUT_BRANCH, 400)
-    }
-
-    if (!email) {
-      throw new ErrorClass(ERROR.NO_EMAIL, 400)
-    }
-
-    /**
-     * set data from the populated path & schema model with
-     * query condition and store selected keys
-     */
-    const notifications = await Notification.find()
-      .populate({
-        path: 'userStartupSupports.startup',
-        model: StartupSupport,
-        match: { location: { $in: branch } },
-        select: '-_id',
-      })
-      .populate({
-        path: 'eventAndMeetings.eventMeeting',
-        model: EventMeeting,
-        match: { members: { $in: [email] } },
-        select: '-_id',
-      })
-
-    // Separate eventMeeting & userStartup data from populated notifications
-    const emData = notifications?.[0].eventAndMeetings.map(
-      (em) =>
-        em.eventMeeting && {
-          id: em._id,
-          viewed: em.viewed,
-          ...em.eventMeeting._doc,
-        },
-    )
-    const stData = notifications?.[0].userStartupSupports.map(
-      (st) =>
-        st.startup && { id: st._id, viewed: st.viewed, ...st.startup._doc },
-    )
-
-    // merge eventMeeting and startup notification data
-    const data = [...emData, ...stData]
-    const notificationsData = data
-      .filter((dt) => dt !== null && dt?.viewed === false) // filter null values & not viewed notification
-      .sort((a, b) => b.createdAt - a.createdAt) // sort notification on createdAt
-
-    res.status(200).send({
-      message: SUCCESS.NOTIFICATION,
-      notificationCount: notificationsData?.length || 0,
-      notifications: notificationsData || [],
-    })
+    console.log('500')
   } catch (err) {
     next(err)
   }

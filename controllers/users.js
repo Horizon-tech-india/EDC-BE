@@ -231,35 +231,7 @@ module.exports.resendMailOTP = async (req, res, next) => {
 
 module.exports.setNewPassword = async (req, res, next) => {
   try {
-    const isInvalidRequest = validateRequest(req.body, {
-      email: true,
-      newPassword: true,
-      confirmNewPassword: true,
-    })
-    const { email, newPassword, confirmNewPassword } = req.body
-    if (isInvalidRequest) {
-      throw new ErrorClass(ERROR.INVALID_REQ, 400)
-    }
-    if (newPassword !== confirmNewPassword) {
-      throw new ErrorClass(ERROR.PASSWORD_MISSMATCH, 400)
-    }
-    const isUserExits = await Signup.findOne({
-      email,
-    })
-    if (!isUserExits) {
-      throw new ErrorClass(ERROR.INVALID_USER, 404)
-    }
-    const salt = await bcrypt.genSaltSync(10)
-    const setNewPassword = bcrypt.hashSync(req.body?.newPassword, salt)
-    await Signup.updateOne(
-      { email },
-      {
-        $set: {
-          password: setNewPassword,
-        },
-      },
-    )
-    res.send({ message: SUCCESS.SET_PASSWORD, status: 200 })
+    console.log('req?.user?.email')
   } catch (e) {
     next(e)
   }
@@ -405,19 +377,7 @@ module.exports.downloadFile = async (req, res, next) => {
 
 module.exports.startupStatus = async (req, res, next) => {
   try {
-    const data = await StartupSupport.findOne({
-      email: req?.user?.email,
-    }).select('status startupId fileName')
-    if (!data) {
-      throw new ErrorClass(ERROR.NO_STARTUP_WITH_EMAIL, 400)
-    }
-    res.send({
-      message: SUCCESS.STATUS_FETCHED,
-      startupStatus: data?.status || 'N/A',
-      startupId: data.startupId,
-      fileName: data.fileName,
-      status: 200,
-    })
+    console.log(req?.user?.email)
   } catch (err) {
     console.error(err)
     next(err)
@@ -426,29 +386,7 @@ module.exports.startupStatus = async (req, res, next) => {
 
 module.exports.getUserMeetingAndEvent = async (req, res, next) => {
   try {
-    const data = await EventMeeting.find({
-      members: { $in: req?.user?.email },
-    }).select('-_id -__v -createdAt -updatedAt')
-    const meetings = []
-    const events = []
-    if (data.length) {
-      data.forEach((meetingOrEvent) => {
-        if (meetingOrEvent.type === ACTIVITY.MEETING) {
-          meetings.push(meetingOrEvent)
-        } else {
-          events.push(meetingOrEvent)
-        }
-      })
-    }
-    res.status(200).send({
-      message: data.length
-        ? SUCCESS.EVENT_MEETING_FETCHED
-        : ERROR.NO_EVENT_MEETING_FOUND,
-      meetingCount: meetings.length ? meetings.length : 0,
-      eventCount: events.length ? events.length : 0,
-      meetings,
-      events,
-    })
+    console.log(req?.user?.email)
   } catch (err) {
     console.error(err)
     next(err)
